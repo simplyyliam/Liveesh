@@ -12,10 +12,13 @@
     "dev:tauri": "npx tauri dev"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "axios": "^1.14.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "leva": "^0.10.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
