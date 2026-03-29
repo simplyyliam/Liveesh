@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
+import axios from 'axios'
 import './App.css'
 
 type BlobSpec = {
@@ -23,6 +24,19 @@ type Palette = {
   name: string
   background: string
   anchors: string[]
+}
+
+type WallpaperSettings = {
+  paletteIndex: number
+  blobCount: number
+  minSize: number
+  maxSize: number
+  softness: number
+  opacity: number
+  blurStrength: number
+  noiseAmount: number
+  grainScale: number
+  seed: number
 }
 
 const palettes: Palette[] = [
@@ -57,6 +71,19 @@ const palettes: Palette[] = [
     anchors: ['#c2d6ff', '#7f99cc', '#2b3a55', '#141a27'],
   },
 ]
+
+const defaultSettings: WallpaperSettings = {
+  paletteIndex: 0,
+  blobCount: 11,
+  minSize: 280,
+  maxSize: 620,
+  softness: 48,
+  opacity: 0.55,
+  blurStrength: 52,
+  noiseAmount: 0.12,
+  grainScale: 140,
+  seed: 1,
+}
 
 const mulberry32 = (seed: number) => {
   let t = seed
@@ -110,31 +137,43 @@ const hexToHue = (hex: string) => {
   return hue
 }
 
-function App() {
-  const [paletteIndex, setPaletteIndex] = useState(0)
-  const [blobCount, setBlobCount] = useState(11)
-  const [minSize, setMinSize] = useState(280)
-  const [maxSize, setMaxSize] = useState(620)
-  const [softness, setSoftness] = useState(48)
-  const [opacity, setOpacity] = useState(0.55)
-  const [blurStrength, setBlurStrength] = useState(52)
-  const [noiseAmount, setNoiseAmount] = useState(0.12)
-  const [grainScale, setGrainScale] = useState(140)
-  const [seed, setSeed] = useState(1)
+const getApiBase = () => {
+  const envBase = import.meta.env.VITE_API_BASE
+  if (envBase) return envBase.replace(/\/$/, '')
 
-  const palette = palettes[paletteIndex]
+  if (import.meta.env.DEV) {
+    return ''
+  }
+
+  const { protocol, hostname, port } = window.location
+  return `${protocol}//${hostname}${port ? `:${port}` : ''}`
+}
+
+function App() {
+  const [settings, setSettings] = useState<WallpaperSettings>(defaultSettings)
+  const [embedId] = useState(() => {
+    const match = window.location.pathname.match(/\/embed\/([a-zA-Z0-9-]+)/)
+    return match?.[1] ?? null
+  })
+  const [embedUrl, setEmbedUrl] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
+
+  const isEmbed = Boolean(embedId)
+  const palette = palettes[settings.paletteIndex]
+  const apiBase = useMemo(() => getApiBase(), [])
 
   const blobs = useMemo(() => {
-    const rand = mulberry32(seed)
+    const rand = mulberry32(settings.seed)
     const anchors = palette.anchors.map(hexToHue)
 
-    return Array.from({ length: blobCount }, (_, index) => {
-      const size = minSize + rand() * (maxSize - minSize)
+    return Array.from({ length: settings.blobCount }, (_, index) => {
+      const size = settings.minSize + rand() * (settings.maxSize - settings.minSize)
       const x = rand() * 100
       const y = rand() * 100
       const hue = anchors[Math.floor(rand() * anchors.length)]
-      const alpha = opacity * (0.5 + rand() * 0.6)
-      const blur = softness * (0.6 + rand() * 0.7)
+      const alpha = settings.opacity * (0.5 + rand() * 0.6)
+      const blur = settings.softness * (0.6 + rand() * 0.7)
       const rotation = rand() * 140 - 70
       const driftX = (rand() * 2 - 1) * 140
       const driftY = (rand() * 2 - 1) * 120
@@ -161,17 +200,60 @@ function App() {
         driftDelay,
       }
     })
-  }, [blobCount, minSize, maxSize, softness, opacity, palette, seed])
+  }, [settings, palette])
+
+  useEffect(() => {
+    if (!embedId) return
+    let isMounted = true
+
+    axios
+      .get(`${apiBase}/api/wallpapers/${embedId}`)
+      .then((response) => {
+        if (!isMounted) return
+        setSettings(response.data.settings)
+      })
+      .catch(() => {
+        if (!isMounted) return
+        setStatusMessage('Unable to load this wallpaper.')
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiBase, embedId])
+
+  const updateSettings = (patch: Partial<WallpaperSettings>) => {
+    setSettings((prev) => ({ ...prev, ...patch }))
+  }
+
+  const handleCompile = async () => {
+    setIsSaving(true)
+    setStatusMessage('')
+
+    try {
+      const response = await axios.post(`${apiBase}/api/wallpapers`, {
+        settings,
+      })
+      const id = response.data.id
+      const link = `${window.location.origin}/embed/${id}`
+      setEmbedUrl(link)
+      setStatusMessage('Saved. Your embed link is ready.')
+    } catch (error) {
+      setStatusMessage('Could not save this wallpaper. Try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
-    <main className="composer">
+    <main className={`composer${isEmbed ? ' embed' : ''}`}>
       <section
         className="canvas"
         style={{
           backgroundImage: palette.background,
-          ['--blur-strength' as string]: `${blurStrength}px`,
-          ['--noise-opacity' as string]: noiseAmount.toString(),
-          ['--grain-scale' as string]: `${grainScale}px`,
+          ['--blur-strength' as string]: `${settings.blurStrength}px`,
+          ['--noise-opacity' as string]: settings.noiseAmount.toString(),
+          ['--grain-scale' as string]: `${settings.grainScale}px`,
         }}
       >
         <div className="mesh" aria-hidden="true">
@@ -201,158 +283,199 @@ function App() {
         </div>
         <div className="blur-layer" aria-hidden="true" />
         <div className="noise-layer" aria-hidden="true" />
+        {isEmbed && statusMessage && (
+          <div className="embed-status">{statusMessage}</div>
+        )}
       </section>
 
-      <aside className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">Mesh Composer</p>
-            <h1>Wallpaper Blend Lab</h1>
-            <p className="subtitle">
-              Tune the atmosphere, softness, and grain to match the aesthetic
-              mesh wallpapers you shared.
+      {!isEmbed && (
+        <aside className="panel">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Mesh Composer</p>
+              <h1>Wallpaper Blend Lab</h1>
+              <p className="subtitle">
+                Tune the atmosphere, softness, and grain to match the aesthetic
+                mesh wallpapers you shared.
+              </p>
+            </div>
+            <button
+              className="ghost"
+              type="button"
+              onClick={() => updateSettings({ seed: settings.seed + 1 })}
+            >
+              Randomize
+            </button>
+          </div>
+
+          <div className="control">
+            <label htmlFor="palette">Palette</label>
+            <div className="palette-row">
+              <select
+                id="palette"
+                value={settings.paletteIndex}
+                onChange={(event) =>
+                  updateSettings({ paletteIndex: Number(event.target.value) })
+                }
+              >
+                {palettes.map((item, index) => (
+                  <option key={item.name} value={index}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <div className="swatches" aria-hidden="true">
+                {palette.anchors.map((color) => (
+                  <span key={color} style={{ background: color }} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="control">
+            <label htmlFor="blobCount">Blob count</label>
+            <input
+              id="blobCount"
+              type="range"
+              min={6}
+              max={18}
+              value={settings.blobCount}
+              onChange={(event) =>
+                updateSettings({ blobCount: Number(event.target.value) })
+              }
+            />
+            <p className="value">{settings.blobCount} blobs</p>
+          </div>
+
+          <div className="control">
+            <label>Blob size</label>
+            <div className="range-pair">
+              <div>
+                <span>Min</span>
+                <input
+                  type="range"
+                  min={120}
+                  max={480}
+                  value={settings.minSize}
+                  onChange={(event) =>
+                    updateSettings({ minSize: Number(event.target.value) })
+                  }
+                />
+              </div>
+              <div>
+                <span>Max</span>
+                <input
+                  type="range"
+                  min={380}
+                  max={900}
+                  value={settings.maxSize}
+                  onChange={(event) =>
+                    updateSettings({ maxSize: Number(event.target.value) })
+                  }
+                />
+              </div>
+            </div>
+            <p className="value">
+              {Math.round(settings.minSize)}px to {Math.round(settings.maxSize)}px
             </p>
           </div>
-          <button
-            className="ghost"
-            type="button"
-            onClick={() => setSeed((prev) => prev + 1)}
-          >
-            Randomize
-          </button>
-        </div>
 
-        <div className="control">
-          <label htmlFor="palette">Palette</label>
-          <div className="palette-row">
-            <select
-              id="palette"
-              value={paletteIndex}
-              onChange={(event) => setPaletteIndex(Number(event.target.value))}
+          <div className="control">
+            <label htmlFor="softness">Blob softness</label>
+            <input
+              id="softness"
+              type="range"
+              min={12}
+              max={120}
+              value={settings.softness}
+              onChange={(event) =>
+                updateSettings({ softness: Number(event.target.value) })
+              }
+            />
+            <p className="value">{settings.softness}px blur</p>
+          </div>
+
+          <div className="control">
+            <label htmlFor="opacity">Blob opacity</label>
+            <input
+              id="opacity"
+              type="range"
+              min={0.15}
+              max={0.9}
+              step={0.01}
+              value={settings.opacity}
+              onChange={(event) =>
+                updateSettings({ opacity: Number(event.target.value) })
+              }
+            />
+            <p className="value">{settings.opacity.toFixed(2)}</p>
+          </div>
+
+          <div className="control">
+            <label htmlFor="blurStrength">Overall blur</label>
+            <input
+              id="blurStrength"
+              type="range"
+              min={0}
+              max={120}
+              value={settings.blurStrength}
+              onChange={(event) =>
+                updateSettings({ blurStrength: Number(event.target.value) })
+              }
+            />
+            <p className="value">{settings.blurStrength}px</p>
+          </div>
+
+          <div className="control">
+            <label htmlFor="noise">Noise amount</label>
+            <input
+              id="noise"
+              type="range"
+              min={0}
+              max={0.4}
+              step={0.01}
+              value={settings.noiseAmount}
+              onChange={(event) =>
+                updateSettings({ noiseAmount: Number(event.target.value) })
+              }
+            />
+            <p className="value">{settings.noiseAmount.toFixed(2)}</p>
+          </div>
+
+          <div className="control">
+            <label htmlFor="grain">Grain scale</label>
+            <input
+              id="grain"
+              type="range"
+              min={120}
+              max={320}
+              value={settings.grainScale}
+              onChange={(event) =>
+                updateSettings({ grainScale: Number(event.target.value) })
+              }
+            />
+            <p className="value">{settings.grainScale}px</p>
+          </div>
+
+          <div className="compile">
+            <button
+              className="compile-btn"
+              type="button"
+              onClick={handleCompile}
+              disabled={isSaving}
             >
-              {palettes.map((item, index) => (
-                <option key={item.name} value={index}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-            <div className="swatches" aria-hidden="true">
-              {palette.anchors.map((color) => (
-                <span key={color} style={{ background: color }} />
-              ))}
-            </div>
+              {isSaving ? 'Compiling…' : 'Compile Wallpaper'}
+            </button>
+            {statusMessage && <p className="status">{statusMessage}</p>}
+            {embedUrl && (
+              <div className="embed-link">
+                <p className="label">Embed link</p>
+                <code>{embedUrl}</code>
+              </div>
+            )}
           </div>
-        </div>
-
-        <div className="control">
-          <label htmlFor="blobCount">Blob count</label>
-          <input
-            id="blobCount"
-            type="range"
-            min={6}
-            max={18}
-            value={blobCount}
-            onChange={(event) => setBlobCount(Number(event.target.value))}
-          />
-          <p className="value">{blobCount} blobs</p>
-        </div>
-
-        <div className="control">
-          <label>Blob size</label>
-          <div className="range-pair">
-            <div>
-              <span>Min</span>
-              <input
-                type="range"
-                min={120}
-                max={480}
-                value={minSize}
-                onChange={(event) => setMinSize(Number(event.target.value))}
-              />
-            </div>
-            <div>
-              <span>Max</span>
-              <input
-                type="range"
-                min={380}
-                max={900}
-                value={maxSize}
-                onChange={(event) => setMaxSize(Number(event.target.value))}
-              />
-            </div>
-          </div>
-          <p className="value">
-            {Math.round(minSize)}px to {Math.round(maxSize)}px
-          </p>
-        </div>
-
-        <div className="control">
-          <label htmlFor="softness">Blob softness</label>
-          <input
-            id="softness"
-            type="range"
-            min={12}
-            max={120}
-            value={softness}
-            onChange={(event) => setSoftness(Number(event.target.value))}
-          />
-          <p className="value">{softness}px blur</p>
-        </div>
-
-        <div className="control">
-          <label htmlFor="opacity">Blob opacity</label>
-          <input
-            id="opacity"
-            type="range"
-            min={0.15}
-            max={0.9}
-            step={0.01}
-            value={opacity}
-            onChange={(event) => setOpacity(Number(event.target.value))}
-          />
-          <p className="value">{opacity.toFixed(2)}</p>
-        </div>
-
-        <div className="control">
-          <label htmlFor="blurStrength">Overall blur</label>
-          <input
-            id="blurStrength"
-            type="range"
-            min={0}
-            max={120}
-            value={blurStrength}
-            onChange={(event) => setBlurStrength(Number(event.target.value))}
-          />
-          <p className="value">{blurStrength}px</p>
-        </div>
-
-        <div className="control">
-          <label htmlFor="noise">Noise amount</label>
-          <input
-            id="noise"
-            type="range"
-            min={0}
-            max={0.4}
-            step={0.01}
-            value={noiseAmount}
-            onChange={(event) => setNoiseAmount(Number(event.target.value))}
-          />
-          <p className="value">{noiseAmount.toFixed(2)}</p>
-        </div>
-
-        <div className="control">
-          <label htmlFor="grain">Grain scale</label>
-          <input
-            id="grain"
-            type="range"
-            min={120}
-            max={320}
-            value={grainScale}
-            onChange={(event) => setGrainScale(Number(event.target.value))}
-          />
-          <p className="value">{grainScale}px</p>
-        </div>
-      </aside>
+        </aside>
+      )}
     </main>
   )
 }

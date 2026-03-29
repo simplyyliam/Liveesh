@@ -1,0 +1,36 @@
+{
+  "items": {
+    "446e248e-cc87-4491-ba58-1c78efa9d4e2": {
+      "id": "446e248e-cc87-4491-ba58-1c78efa9d4e2",
+      "settings": {
+        "paletteIndex": 0,
+        "blobCount": 11,
+        "minSize": 280,
+        "maxSize": 620,
+        "softness": 48,
+        "opacity": 0.55,
+        "blurStrength": 52,
+        "noiseAmount": 0.12,
+        "grainScale": 140,
+        "seed": 1
+      },
+      "createdAt": "2026-03-29T12:08:12.091Z"
+    },
+    "9ab8dd5d-882d-453a-ae32-f7149445b913": {
+      "id": "9ab8dd5d-882d-453a-ae32-f7149445b913",
+      "settings": {
+        "paletteIndex": 0,
+        "blobCount": 16,
+        "minSize": 458,
+        "maxSize": 900,
+        "softness": 12,
+        "opacity": 0.9,
+        "blurStrength": 0,
+        "noiseAmount": 0.12,
+        "grainScale": 140,
+        "seed": 1
+      },
+      "createdAt": "2026-03-29T12:09:10.171Z"
+    }
+  }
+}
