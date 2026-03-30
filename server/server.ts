@@ -10,7 +10,8 @@ import { fileURLToPath } from 'url'
 dotenv.config()
 
 const app = express()
-const port = Number(process.env.PORT) || 5174
+const port = Number(process.env.PORT)
+if(!port) throw new Error('PORT environment variable is required by Render')
 
 // Resolve __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url)
