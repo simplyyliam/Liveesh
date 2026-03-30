@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "ts-node --esm server/server.ts",
-    "api:start": "node --loader ts-node/esm server/server.ts",
+    "build:api": "tsc --project tsconfig.server.json",
+    "api:start": "node dist/server/server.js",
     "start": "node --loader ts-node/esm server/server.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
