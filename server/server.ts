@@ -126,6 +126,6 @@ if (fs.existsSync(distDir)) {
 }
 
 // --- Start server ---
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Wallpaper API running on ${port}`)
 })

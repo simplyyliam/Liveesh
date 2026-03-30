@@ -3,7 +3,7 @@ services:
     name: liveesh-api
     env: node
     plan: free
-    buildCommand: npm install --include=dev
+    buildCommand: npm install --include=dev && npm run build:api
     startCommand: npm run api:start
     autoDeploy: true
     envVars:
