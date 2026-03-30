@@ -18,6 +18,7 @@ export default function Background({ settings, palette }: BackgroundProps) {
     settingsRef.current = settings
     paletteRef.current = palette
     engineRef.current?.update(settings, palette)
+    engineRef.current?.resize()
   }, [settings, palette])
 
   useEffect(() => {

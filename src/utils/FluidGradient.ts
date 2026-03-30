@@ -22,6 +22,7 @@ uniform float u_softness;
 uniform float u_opacity;
 uniform float u_noise;
 uniform float u_scale;
+uniform int u_octaves;
 uniform vec3 u_colA;
 uniform vec3 u_colB;
 uniform vec3 u_colC;
@@ -46,6 +47,7 @@ float fbm(vec2 p) {
   float value = 0.0;
   float amplitude = 0.6;
   for (int i = 0; i < 4; i++) {
+    if (i >= u_octaves) break;
     value += amplitude * noise(p);
     p *= 2.1;
     amplitude *= 0.5;
@@ -126,6 +128,7 @@ export class FluidGradient {
   private uOpacity: WebGLUniformLocation | null
   private uNoise: WebGLUniformLocation | null
   private uScale: WebGLUniformLocation | null
+  private uOctaves: WebGLUniformLocation | null
   private uColA: WebGLUniformLocation | null
   private uColB: WebGLUniformLocation | null
   private uColC: WebGLUniformLocation | null
@@ -148,6 +151,7 @@ export class FluidGradient {
     this.uOpacity = gl.getUniformLocation(this.program, 'u_opacity')
     this.uNoise = gl.getUniformLocation(this.program, 'u_noise')
     this.uScale = gl.getUniformLocation(this.program, 'u_scale')
+    this.uOctaves = gl.getUniformLocation(this.program, 'u_octaves')
     this.uColA = gl.getUniformLocation(this.program, 'u_colA')
     this.uColB = gl.getUniformLocation(this.program, 'u_colB')
     this.uColC = gl.getUniformLocation(this.program, 'u_colC')
@@ -156,12 +160,12 @@ export class FluidGradient {
     this.settings = settings
     this.palette = palette
 
-    this.resize()
+    this.handleResize()
     if (window.ResizeObserver) {
-      this.resizeObserver = new ResizeObserver(this.resize)
+      this.resizeObserver = new ResizeObserver(this.handleResize)
       this.resizeObserver.observe(this.canvas)
     } else {
-      window.addEventListener('resize', this.resize)
+      window.addEventListener('resize', this.handleResize)
     }
 
     document.addEventListener('visibilitychange', this.handleVisibility)
@@ -234,11 +238,13 @@ export class FluidGradient {
     return vao
   }
 
-  private resize = () => {
+  private handleResize = () => {
     const rect = this.canvas.getBoundingClientRect()
     this.width = rect.width
     this.height = rect.height
-    this.dpr = 1
+    const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    const scale = Math.max(0.5, Math.min(1, this.settings.renderScale ?? 1))
+    this.dpr = baseDpr * scale
 
     const scaledWidth = Math.max(1, Math.floor(this.width * this.dpr))
     const scaledHeight = Math.max(1, Math.floor(this.height * this.dpr))
@@ -246,6 +252,10 @@ export class FluidGradient {
     this.canvas.width = scaledWidth
     this.canvas.height = scaledHeight
     this.gl.viewport(0, 0, scaledWidth, scaledHeight)
+  }
+
+  public resize() {
+    this.handleResize()
   }
 
   private draw = (time: number) => {
@@ -263,6 +273,7 @@ export class FluidGradient {
     const opacity = Math.max(0.2, Math.min(0.9, this.settings.opacity))
     const noise = Math.max(0.0, Math.min(1.0, this.settings.noiseAmount / 0.4))
     const scale = 1.0 - (Math.max(120, Math.min(320, this.settings.grainScale)) - 120) / 200 * 0.35
+    const octaves = Math.max(2, Math.min(4, Math.round(this.settings.fbmOctaves)))
 
     if (this.uResolution) gl.uniform2f(this.uResolution, this.width, this.height)
     if (this.uTime) gl.uniform1f(this.uTime, time / 1000)
@@ -270,6 +281,7 @@ export class FluidGradient {
     if (this.uOpacity) gl.uniform1f(this.uOpacity, opacity)
     if (this.uNoise) gl.uniform1f(this.uNoise, noise)
     if (this.uScale) gl.uniform1f(this.uScale, scale)
+    if (this.uOctaves) gl.uniform1i(this.uOctaves, octaves)
 
     if (this.uColA) gl.uniform3f(this.uColA, c0.r, c0.g, c0.b)
     if (this.uColB) gl.uniform3f(this.uColB, c1.r, c1.g, c1.b)
@@ -298,7 +310,7 @@ export class FluidGradient {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect()
     } else {
-      window.removeEventListener('resize', this.resize)
+      window.removeEventListener('resize', this.handleResize)
     }
     document.removeEventListener('visibilitychange', this.handleVisibility)
     cancelAnimationFrame(this.frameId)

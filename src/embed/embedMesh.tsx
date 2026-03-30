@@ -33,7 +33,7 @@ export default function Embed() {
     ref={canvasRef}
     width={window.innerWidth}
     height={window.innerHeight}
-    style={{ display: "block" }} // optional, just remove extra CSS sizing
+    style={{ display: "block" }}
   />
 );
 }

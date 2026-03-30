@@ -27,6 +27,8 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [fps, setFps] = useState(0)
+  const [adaptiveScale, setAdaptiveScale] = useState(defaultSettings.renderScale)
+  const [adaptiveOctaves, setAdaptiveOctaves] = useState(defaultSettings.fbmOctaves)
 
   const isEmbed = Boolean(embedId)
   const palette = palettes[settings.paletteIndex]
@@ -34,7 +36,7 @@ export default function App() {
 
   useEffect(() => {
     let frameId = 0
-    let lastTime = performance.now()
+    const lastTime = performance.now()
     let lastReport = lastTime
     let frames = 0
 
@@ -58,6 +60,40 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    setAdaptiveScale(settings.renderScale)
+    const clampedOctaves = Math.max(2, Math.min(4, Math.round(settings.fbmOctaves)))
+    setAdaptiveOctaves(clampedOctaves)
+  }, [settings.renderScale, settings.fbmOctaves])
+
+  useEffect(() => {
+    if (!settings.adaptiveMode) return
+    if (!fps) return
+
+    const minOctaves = 2
+    const maxOctaves = Math.max(2, Math.min(4, Math.round(settings.fbmOctaves)))
+
+    let nextOctaves = adaptiveOctaves
+    if (fps < 50) {
+      nextOctaves = Math.max(minOctaves, adaptiveOctaves - 1)
+    } else if (fps > 58) {
+      nextOctaves = Math.min(maxOctaves, adaptiveOctaves + 1)
+    }
+
+    let targetScale = adaptiveScale
+    if (fps < 50 && nextOctaves === minOctaves) {
+      targetScale = adaptiveScale - 0.05
+    } else if (fps > 58 && nextOctaves === maxOctaves) {
+      targetScale = adaptiveScale + 0.02
+    }
+
+    targetScale = Math.max(0.5, Math.min(1, targetScale))
+    const smoothedScale = adaptiveScale * 0.9 + targetScale * 0.1
+
+    setAdaptiveOctaves(nextOctaves)
+    setAdaptiveScale(smoothedScale)
+  }, [adaptiveOctaves, adaptiveScale, fps, settings.adaptiveMode, settings.fbmOctaves])
+
+  useEffect(() => {
     if (!embedId) return
     let isMounted = true
 
@@ -65,7 +101,7 @@ export default function App() {
       .get(`${apiBase}/api/wallpapers/${embedId}`)
       .then((response) => {
         if (!isMounted) return
-        setSettings(response.data.settings)
+        setSettings({ ...defaultSettings, ...response.data.settings })
       })
       .catch(() => {
         if (!isMounted) return
@@ -95,6 +131,7 @@ export default function App() {
       setStatusMessage('Saved. Your embed link is ready.')
     } catch (error) {
       setStatusMessage('Could not save this wallpaper. Try again.')
+      console.log("Error", error)
     } finally {
       setIsSaving(false)
     }
@@ -111,7 +148,14 @@ export default function App() {
           ['--grain-scale' as string]: `${settings.grainScale}px`,
         }}
       >
-        <Background settings={settings} palette={palette} />
+        <Background
+          settings={{
+            ...settings,
+            renderScale: settings.adaptiveMode ? adaptiveScale : settings.renderScale,
+            fbmOctaves: settings.adaptiveMode ? adaptiveOctaves : settings.fbmOctaves,
+          }}
+          palette={palette}
+        />
         <div className="blur-layer" aria-hidden="true" />
         <div className="noise-layer" aria-hidden="true" />
         <div className="fps">{fps} fps</div>
@@ -239,6 +283,22 @@ export default function App() {
               }
             />
             <p className="value">{settings.grainScale}px</p>
+          </div>
+
+          <div className="control">
+            <label htmlFor="renderScale">Render scale</label>
+            <input
+              id="renderScale"
+              type="range"
+              min={0.5}
+              max={1}
+              step={0.05}
+              value={settings.renderScale}
+              onChange={(event) =>
+                updateSettings({ renderScale: Number(event.target.value) })
+              }
+            />
+            <p className="value">{Math.round(settings.renderScale * 100)}%</p>
           </div>
 
           <div className="compile">
