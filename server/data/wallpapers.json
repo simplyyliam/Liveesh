@@ -1,0 +1,23 @@
+{
+  "items": {
+    "ceb8c37e-4aa8-4f67-acce-928b4bc5cbf2": {
+      "id": "ceb8c37e-4aa8-4f67-acce-928b4bc5cbf2",
+      "settings": {
+        "paletteIndex": 0,
+        "blobCount": 11,
+        "minSize": 280,
+        "maxSize": 620,
+        "softness": 48,
+        "opacity": 0.55,
+        "blurStrength": 52,
+        "noiseAmount": 0.12,
+        "grainScale": 140,
+        "renderScale": 1,
+        "fbmOctaves": 4,
+        "adaptiveMode": false,
+        "seed": 1
+      },
+      "createdAt": "2026-03-30T16:20:45.959Z"
+    }
+  }
+}

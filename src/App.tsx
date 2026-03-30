@@ -20,6 +20,13 @@ const getApiBase = () => {
   return `${protocol}//${hostname}${port ? `:${port}` : ''}`
 }
 
+const getEmbedBase = () => {
+  const envBase = import.meta.env.VITE_EMBED_BASE as string | undefined
+  if (envBase) return envBase.replace(/\/$/, '')
+  if (isTauri) return 'liveesh://wallpaper'
+  return window.location.origin
+}
+
 export default function App() {
   const [settings, setSettings] = useState<WallpaperSettings>(defaultSettings)
   const [embedId] = useState(() => {
@@ -36,6 +43,7 @@ export default function App() {
   const isEmbed = Boolean(embedId)
   const palette = palettes[settings.paletteIndex]
   const apiBase = useMemo(() => getApiBase(), [])
+  const embedBase = useMemo(() => getEmbedBase(), [])
 
   useEffect(() => {
     let frameId = 0
@@ -129,9 +137,12 @@ export default function App() {
         settings,
       })
       const id = response.data.id
-      const link = isTauri 
-      ? `liveesh://wallpaper/${id}`
-      : `${window.location.origin}/embed/${id}`
+      if (!id || typeof id !== 'string') {
+        throw new Error('Missing wallpaper id')
+      }
+      const link = embedBase.startsWith('liveesh://')
+        ? `${embedBase}/${id}`
+        : `${embedBase}/embed/${id}`
       setEmbedUrl(link)
       setStatusMessage('Saved. Your embed link is ready.')
     } catch (error) {
