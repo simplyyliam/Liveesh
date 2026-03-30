@@ -64,3 +64,15 @@ export const hexToHue = (hex: string) => {
 
   return hue
 }
+
+
+export type WallpaperStore = {
+  items: Record<
+    string,
+    {
+      id: string
+      settings: WallpaperSettings
+      createdAt: string
+    }
+  >
+}

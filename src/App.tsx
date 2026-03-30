@@ -5,6 +5,9 @@ import { palettes } from './lib/palettes'
 import { defaultSettings, type WallpaperSettings } from './types/fluidMesh'
 import './App.css'
 
+
+const isTauri = !!window.__TAURI__
+
 const getApiBase = () => {
   const envBase = import.meta.env.VITE_API_BASE as string | undefined
   if (envBase) return envBase.replace(/\/$/, '')
@@ -126,7 +129,9 @@ export default function App() {
         settings,
       })
       const id = response.data.id
-      const link = `${window.location.origin}/embed/${id}`
+      const link = isTauri 
+      ? `liveesh://wallpaper/${id}`
+      : `${window.location.origin}/embed/${id}`
       setEmbedUrl(link)
       setStatusMessage('Saved. Your embed link is ready.')
     } catch (error) {
