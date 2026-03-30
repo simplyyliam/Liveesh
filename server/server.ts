@@ -49,6 +49,8 @@ const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173')
 const isAllowedOrigin = (origin: string | undefined) => {
   if (!origin) return true
   if (corsOrigins.includes(origin)) return true
+  if (origin === 'http://tauri.localhost') return true
+  if (origin === 'tauri://localhost') return true
   if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true
   return false
 }
