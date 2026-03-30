@@ -11,5 +11,5 @@ services:
         value: production
       - key: CORS_ORIGINS
         value: https://liveesh.vercel.app
-      - key: PORT
-        value: 5174
+      # - key: PORT
+      #   value: $PORT
