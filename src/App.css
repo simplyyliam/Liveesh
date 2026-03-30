@@ -1,1 +1,253 @@
-﻿
+﻿.composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 460px);
+  min-height: 100svh;
+  background: #f6f3ef;
+}
+
+.composer.embed {
+  grid-template-columns: 1fr;
+}
+
+.canvas {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background-size: cover;
+  background-repeat: no-repeat;
+  --blur-strength: 48px;
+  --noise-opacity: 0.18;
+  --grain-scale: 220px;
+}
+
+.mesh-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.blur-layer {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(var(--blur-strength)) saturate(120%);
+  background: rgba(255, 255, 255, 0.12);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.noise-layer {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='1' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.4'/></svg>");
+  background-size: var(--grain-scale) var(--grain-scale);
+  mix-blend-mode: overlay;
+  opacity: var(--noise-opacity);
+  filter: contrast(115%);
+  pointer-events: none;
+}
+
+.fps {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #2d2f38;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.embed-status {
+  position: absolute;
+  inset: auto 32px 32px 32px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  font-size: 13px;
+  color: #3b3130;
+  backdrop-filter: blur(10px);
+}
+
+.panel {
+  background: #f6f3ef;
+  padding: 40px 36px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-left: 1px solid rgba(24, 24, 24, 0.08);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #8b7f75;
+}
+
+.panel h1 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #191a22;
+}
+
+.subtitle {
+  margin: 0;
+  color: #6e6259;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ghost {
+  border: 1px solid rgba(24, 24, 24, 0.18);
+  background: transparent;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #2d2f38;
+}
+
+.ghost:hover {
+  border-color: rgba(24, 24, 24, 0.35);
+}
+
+.control {
+  display: grid;
+  gap: 10px;
+}
+
+.control label {
+  font-weight: 600;
+  color: #2a2c34;
+  font-size: 14px;
+}
+
+.control input[type='range'] {
+  width: 100%;
+  accent-color: #f2a970;
+}
+
+.control select {
+  border-radius: 14px;
+  border: 1px solid rgba(24, 24, 24, 0.2);
+  padding: 10px 12px;
+  background: white;
+  font-size: 14px;
+}
+
+.value {
+  margin: 0;
+  font-size: 12px;
+  color: #7a7067;
+}
+
+.palette-row {
+  display: grid;
+  gap: 12px;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.swatches span {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.range-pair {
+  display: grid;
+  gap: 12px;
+}
+
+.range-pair span {
+  font-size: 12px;
+  color: #7a7067;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.compile {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(24, 24, 24, 0.08);
+  display: grid;
+  gap: 12px;
+}
+
+.compile-btn {
+  border: none;
+  background: #1f1c1a;
+  color: #f8f4ef;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.compile-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.status {
+  margin: 0;
+  font-size: 12px;
+  color: #7a7067;
+}
+
+.embed-link {
+  display: grid;
+  gap: 8px;
+}
+
+.embed-link .label {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #8b7f75;
+}
+
+.embed-link code {
+  display: block;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+@media (max-width: 1080px) {
+  .composer {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    border-left: none;
+    border-top: 1px solid rgba(24, 24, 24, 0.08);
+  }
+
+  .panel-header {
+    flex-direction: column;
+  }
+}
