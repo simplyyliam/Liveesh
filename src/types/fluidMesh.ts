@@ -21,12 +21,12 @@ export type WallpaperSettings = {
 }
 
 export const defaultSettings: WallpaperSettings = {
-  paletteIndex: 0,
+  paletteIndex: 2,
   blobCount: 11,
   minSize: 280,
   maxSize: 620,
   softness: 48,
-  opacity: 0.55,
+  opacity: 1,
   blurStrength: 52,
   noiseAmount: 0.12,
   grainScale: 140,

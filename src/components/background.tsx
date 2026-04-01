@@ -32,5 +32,5 @@ export default function Background({ settings, palette }: BackgroundProps) {
     }
   }, [])
 
-  return <canvas ref={ref} className="mesh-canvas" />
+  return <canvas ref={ref} className="bg-black w-full h-full rounded-3xl" />
 }
