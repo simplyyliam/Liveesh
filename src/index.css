@@ -1,4 +1,11 @@
-﻿@import "tailwindcss";
+﻿@import url('https://fonts.cdnfonts.com/css/led-dot-matrix');
+
+@import "tailwindcss";
+
+
+@theme {
+  --font-DOT: 'LED Dot-Matrix', sans-serif;
+}
 
 :root {
   font-family: 'Space Grotesk', 'Segoe UI Variable', sans-serif;

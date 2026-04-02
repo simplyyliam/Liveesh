@@ -168,7 +168,7 @@ export default function App() {
   };
 
   return (
-    <main className={`w-screen h-screen overflow-hidden bg-[#0A0A0A]`}>
+    <main className={`w-screen h-screen overflow-hidden p-1.5 bg-[#0A0A0A]`}>
       <div
         className="flex flex-col items-center justify-center w-full h-full gap-2.5 p-2.5"
         style={{

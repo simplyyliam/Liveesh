@@ -15,8 +15,8 @@ const generatePixelGrain = () => {
   console.log("Data", data)
 
   for (let i = 0; i < data.length; i += 4) {
-    const grain = Math.random() < 0.5 ? 40 : 0; 
-    const brightness = 70 + grain; 
+    const grain = Math.random() < 0.5 ? 35 : 0; 
+    const brightness = 65 + grain; 
     data[i] = data[i + 1] = data[i + 2] = brightness;
     data[i + 3] = 255; 
   }
@@ -27,11 +27,12 @@ const generatePixelGrain = () => {
 
 const PIXEL_GRAIN_URL = generatePixelGrain();
 
-export const Noise = ({ opacity = 0.1 }) => (
+export const Noise = ({ opacity = 0.1, rounded = 40}) => (
   <div
-    className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 drop-shadow-[5px_4px_9.7px_rgba(0,0,0,0.25)] rounded-[40px]"
+    className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 drop-shadow-[5px_4px_9.7px_rgba(0,0,0,0.25)]"
     style={{
       opacity,
+      borderRadius: rounded,
       backgroundImage: `url(${PIXEL_GRAIN_URL})`,
       backgroundSize: "128px 128px", // Scale this up or down to change the "pixel" size
       backgroundRepeat: "repeat",

@@ -9,15 +9,18 @@ export const ControlModule: React.FC<HTMLAttributes<HTMLDivElement>> = ({
 }) => {
   return (
     <div
-      className={`flex bg-[#484745] min-w-106.75 w-full h-full rounded-[40px] ${className}`}
+      className={`flex bg-[#484745] h-full rounded-[40px]`}
       {...props}
     >
-      <div className="flex items-center justify-center relative w-full h-full px-12.5 rounded-[40px]">
+      <div className={`relative p-8 h-full rounded-[40px]`}>
         <Noise opacity={1} />
-        <div className="relative">{children}</div>
+
+        <div className={`w-full h-full  ${className}`}>{children}</div>
       </div>
-      <div className="flex items-end px-3 py-6 w-fit h-full">
-        <h1 className="rotate-270">{title}</h1>
+      <div className="flex items-end justify-center h-full w-12 pb-12 shrink-0">
+        <h1 className="-rotate-90 text-white text-[16px] font-DOT leading-none">
+          {title}
+        </h1>
       </div>
     </div>
   );
