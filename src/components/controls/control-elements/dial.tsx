@@ -1,13 +1,11 @@
-import type { HTMLAttributes } from "react";
-import type React from "react";
 import { Noise } from "../../canvas";
 
-export const Dial: React.FC<HTMLAttributes<HTMLDivElement>> = ({
-  className,
-  title,
-  style,
-  ...props
-}) => {
+interface DialProps {
+  title: string
+  className?: string
+}
+
+export default function Dial({ title, className }: DialProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-5">
       <div
@@ -20,10 +18,8 @@ export const Dial: React.FC<HTMLAttributes<HTMLDivElement>> = ({
                 shadow-[0px_12px_37.8px_-9px_rgba(0,0,0,0.43)]
                 ${className}
             `}
-        {...props}
         style={{
           background: "linear-gradient(35deg, #BFBFBF60 1%, #01010100 30%)",
-          ...style,
         }}
       >
         <div
@@ -52,4 +48,4 @@ export const Dial: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       <span className="text-[14px] text-white">{title}</span>
     </div>
   );
-};
+}
