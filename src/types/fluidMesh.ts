@@ -9,6 +9,7 @@ export type WallpaperSettings = {
   blobCount: number
   minSize: number
   maxSize: number
+  
   softness: number
   opacity: number
   blurStrength: number

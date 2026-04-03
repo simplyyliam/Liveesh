@@ -15,8 +15,8 @@ const generatePixelGrain = () => {
   console.log("Data", data)
 
   for (let i = 0; i < data.length; i += 4) {
-    const grain = Math.random() < 0.5 ? 35 : 0; 
-    const brightness = 65 + grain; 
+    const grain = Math.random() < 0.5 ? 45 : 0; 
+    const brightness = 55 + grain; 
     data[i] = data[i + 1] = data[i + 2] = brightness;
     data[i + 3] = 255; 
   }
@@ -43,3 +43,5 @@ export const Noise = ({ opacity = 0.1, rounded = 40}) => (
     }}
   />
 );
+
+

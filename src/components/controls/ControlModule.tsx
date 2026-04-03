@@ -12,10 +12,10 @@ export const ControlModule: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       className={`flex bg-[#484745] h-full rounded-[40px]`}
       {...props}
     >
-      <div className={`relative p-8 h-full rounded-[40px]`}>
+      <div className={`relative  p-8 w-75 h-full rounded-[40px]`}>
         <Noise opacity={1} />
 
-        <div className={`w-full h-full  ${className}`}>{children}</div>
+        <div className={`flex items-center justify-center w-full h-full  ${className}`}>{children}</div>
       </div>
       <div className="flex items-end justify-center h-full w-12 pb-12 shrink-0">
         <h1 className="-rotate-90 text-white text-[16px] font-DOT leading-none">

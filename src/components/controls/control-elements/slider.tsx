@@ -1,26 +1,33 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Noise } from "../../canvas";
 
-export default function Slider() {
-  const [value, setValue] = useState(0);
+type SliderProps = {
+  value?: number
+  onChange: (value: number) => void
+}
+
+export default function Slider({ value, onChange }: SliderProps) {
   const [posY, setPosY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLButtonElement>(null);
   const dragOffset = useRef(0);
 
-  // Initialize thumb at bottom **before paint**
+  // Initialize thumb position based on current value **before paint**
   useLayoutEffect(() => {
     const slider = sliderRef.current;
     const thumb = thumbRef.current;
     if (!slider || !thumb) return;
 
     const thumbHeight = thumb.offsetHeight;
-    const sliderHeight = slider.offsetHeight
+    const sliderHeight = slider.offsetHeight;
     const maxY = sliderHeight - thumbHeight;
-    setPosY(maxY);
-    setValue(0); // bottom = 0
-  }, []);
+    if (maxY <= 0) return;
+
+    const clamped = Math.max(0, Math.min(100, value ?? 0));
+    const y = (1 - clamped / 100) * maxY;
+    setPosY(y);
+  }, [value]);
 
   useLayoutEffect(() => {
     const slider = sliderRef.current;
@@ -36,7 +43,7 @@ export default function Slider() {
       y = Math.max(0, Math.min(y, maxY));
 
       const normalized = Math.round((1 - y / maxY) * 100);
-      setValue(normalized);
+      onChange(normalized);
       setPosY(y);
     };
 
@@ -48,7 +55,7 @@ export default function Slider() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, onChange]);
 
   return (
     <div
@@ -71,13 +78,15 @@ export default function Slider() {
           dragOffset.current = e.clientY - thumbRect.top;
           setIsDragging(true);
         }}
-        className="absolute w-10 h-4 bg-[#3B3834] rounded-full 
-                   shadow-[0px_7px_15.6px_1px_rgba(40,40,40,0.69)] cursor-pointer"
+        className="absolute w-10 h-4 bg-[#3B3834] rounded-full  border-neutral-600 border-[0.5px]
+        shadow-[0px_7px_15.6px_1px_rgba(40,40,40,0.69)] cursor-pointer"
         style={{
           top: 0,
           transform: `translate(0, ${posY}px)`,
         }}
-      />
+      >
+        <Noise opacity={1} />
+      </button>
     </div>
   );
 }

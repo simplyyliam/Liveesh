@@ -3,6 +3,7 @@ import axios from "axios";
 import { defaultSettings, type WallpaperSettings } from "./types/fluidMesh";
 import "./App.css";
 import { ControllerContainer, Preview } from "./components";
+import { useMesh } from "./store/meshStore";
 
 const isTauri = !!window.__TAURI__;
 
@@ -27,6 +28,7 @@ const getEmbedBase = () => {
 
 export default function App() {
   const [settings, setSettings] = useState<WallpaperSettings>(defaultSettings);
+  const { softness, opacity, blurStrength, grainScale, noiseAmount, renderScale, setSoftness, setBlurStrength, setOpacity, setGrainScale, setNoiseAmount, setRenderScale } = useMesh()
   const [embedId] = useState(() => {
     const match = window.location.pathname.match(/\/embed\/([a-zA-Z0-9-]+)/);
     return match?.[1] ?? null;
@@ -73,13 +75,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    setAdaptiveScale(settings.renderScale);
+    setAdaptiveScale(renderScale);
     const clampedOctaves = Math.max(
       2,
       Math.min(4, Math.round(settings.fbmOctaves)),
     );
     setAdaptiveOctaves(clampedOctaves);
-  }, [settings.renderScale, settings.fbmOctaves]);
+  }, [renderScale, settings.fbmOctaves]);
 
   useEffect(() => {
     if (!settings.adaptiveMode) return;
@@ -126,7 +128,14 @@ export default function App() {
       .get(`${apiBase}/api/wallpapers/${embedId}`)
       .then((response) => {
         if (!isMounted) return;
-        setSettings({ ...defaultSettings, ...response.data.settings });
+        const nextSettings = { ...defaultSettings, ...response.data.settings };
+        setSettings(nextSettings);
+        setSoftness(nextSettings.softness);
+        setOpacity(nextSettings.opacity)
+        setBlurStrength(nextSettings.blurStrength)
+        setGrainScale(nextSettings.grainScale)
+        setNoiseAmount(nextSettings.noiseAmount)
+        setRenderScale(nextSettings.renderScale)
       })
       .catch(() => {
         if (!isMounted) return;
@@ -138,9 +147,10 @@ export default function App() {
     };
   }, [apiBase, embedId]);
 
-  const updateSettings = (patch: Partial<WallpaperSettings>) => {
-    setSettings((prev) => ({ ...prev, ...patch }));
-  };
+  const mergedSettings = useMemo(
+    () => ({ ...settings, softness, opacity, blurStrength, grainScale, noiseAmount, renderScale }),
+    [settings, softness, opacity, blurStrength, grainScale, noiseAmount, renderScale],
+  );
 
   const handleCompile = async () => {
     setIsSaving(true);
@@ -148,7 +158,7 @@ export default function App() {
 
     try {
       const response = await axios.post(`${apiBase}/api/wallpapers`, {
-        settings,
+        settings: mergedSettings,
       });
       const id = response.data.id;
       if (!id || typeof id !== "string") {
@@ -172,12 +182,16 @@ export default function App() {
       <div
         className="flex flex-col items-center justify-center w-full h-full gap-2.5 p-2.5"
         style={{
-          ["--blur-strength" as string]: `${settings.blurStrength}px`,
-          ["--noise-opacity" as string]: settings.noiseAmount.toString(),
-          ["--grain-scale" as string]: `${settings.grainScale}px`,
+          ["--blur-strength" as string]: `${blurStrength}px`,
+          ["--noise-opacity" as string]: noiseAmount.toString(),
+          ["--grain-scale" as string]: `${grainScale}px`,
         }}
       >
-        <Preview adaptiveOctaves={adaptiveOctaves} adaptiveScale={adaptiveScale} settings={settings}/>
+        <Preview
+          adaptiveOctaves={adaptiveOctaves}
+          adaptiveScale={adaptiveScale}
+          settings={mergedSettings}
+        />
         <ControllerContainer/>
 
         {/* <div className="blur-layer" aria-hidden="true" />
