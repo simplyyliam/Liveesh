@@ -13,7 +13,7 @@ export default function Preview({settings, adaptiveScale, adaptiveOctaves}: Prev
       const palette = palettes[settings.paletteIndex];
     
   return (
-    <div className="relative bg-neutral-500 w-[75%] h-full rounded-3xl ">
+    <div className="relative w-full h-full rounded-3xl bg-neutral-500">
       <Noise opacity={1} rounded={24}/>
       <Background
         settings={{
