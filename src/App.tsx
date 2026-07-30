@@ -2,7 +2,7 @@
 import axios from "axios";
 import { defaultSettings, type WallpaperSettings } from "./types/fluidMesh";
 import "./App.css";
-import { ControllerContainer, Preview } from "./components";
+import { Preview } from "./components";
 
 const isTauri = !!window.__TAURI__;
 
@@ -178,8 +178,6 @@ export default function App() {
         }}
       >
         <Preview adaptiveOctaves={adaptiveOctaves} adaptiveScale={adaptiveScale} settings={settings}/>
-        <ControllerContainer/>
-
         {/* <div className="blur-layer" aria-hidden="true" />
         <div className="noise-layer" aria-hidden="true" /> */}
         <div className="text-black absolute top-5 left-5">{fps} fps</div>

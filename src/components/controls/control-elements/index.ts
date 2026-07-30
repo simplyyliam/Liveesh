@@ -1,3 +1,0 @@
-
-
-export { Dial } from "./dial"
