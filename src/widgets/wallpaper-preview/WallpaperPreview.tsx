@@ -16,8 +16,8 @@ export default function WallpaperPreview({
   const palette = palettes[settings.paletteIndex];
 
   return (
-    <div className="relative h-full w-full rounded-[15px] bg-neutral-500">
-      <NoiseOverlay opacity={1} rounded={15} />
+    <div className="relative h-full w-full rounded-[6.5px] bg-neutral-500">
+      <NoiseOverlay opacity={1} rounded={6.5} />
       <WallpaperCanvas
         settings={{
           ...settings,

@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import type { ShaderControlKey } from "@/features/shader-editor";
 import { useAdaptivePerformance } from "../../../features/preview";
 import {
   defaultSettings,
   type WallpaperSettings,
 } from "../../../shared/types/wallpaper";
 import { WallpaperPreview } from "../../../widgets/wallpaper-preview";
+import { AppSidePanel } from "../../../widgets/app-side-panel";
 
 const getApiBase = () => {
   const envBase = import.meta.env.VITE_API_BASE as string | undefined;
@@ -31,6 +33,12 @@ export default function LivePreview() {
 
   const isEmbed = Boolean(embedId);
   const apiBase = useMemo(() => getApiBase(), []);
+  const updateShaderSetting = useCallback(
+    (key: ShaderControlKey, value: number) => {
+      setSettings((current) => ({ ...current, [key]: value }));
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!embedId) return;
@@ -53,22 +61,19 @@ export default function LivePreview() {
   }, [apiBase, embedId]);
 
   return (
-    <main className="h-screen w-screen overflow-hidden bg-[#0A0A0A]">
+    <main className="h-screen w-screen overflow-hidden">
       <div
-        className="flex h-full w-full flex-col items-center justify-center gap-2.5 p-2.5"
-        style={{
-          ["--blur-strength" as string]: `${settings.blurStrength}px`,
-          ["--noise-opacity" as string]: settings.noiseAmount.toString(),
-          ["--grain-scale" as string]: `${settings.grainScale}px`,
-        }}
+        className="flex h-full w-full flex-col items-center justify-center gap-2.5 p-1.5"
       >
         <WallpaperPreview
           adaptiveOctaves={adaptiveOctaves}
           adaptiveScale={adaptiveScale}
           settings={settings}
         />
-        {/* <div className="blur-layer" aria-hidden="true" />
-        <div className="noise-layer" aria-hidden="true" /> */}
+        <AppSidePanel
+          onSettingChange={updateShaderSetting}
+          settings={settings}
+        />
         <div className="absolute top-5 left-5 text-black">{fps} fps</div>
         {isEmbed && statusMessage && (
           <div className="embed-status">{statusMessage}</div>

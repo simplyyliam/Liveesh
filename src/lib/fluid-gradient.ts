@@ -22,6 +22,7 @@ out vec4 outColor;
 
 uniform vec2 u_resolution;
 uniform float u_time;
+uniform float u_speed;
 uniform float u_softness;
 uniform float u_opacity;
 uniform float u_noise;
@@ -71,7 +72,7 @@ vec3 gradientMix(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
 
 void main() {
   vec2 uv = v_uv;
-  float t = u_time * 0.08;
+  float t = u_time * 0.08 * u_speed;
 
   vec2 flow = vec2(
     fbm(uv * u_scale + vec2(t * 0.35, -t * 0.22)),
@@ -128,6 +129,7 @@ export class FluidGradient {
 
   private uResolution: WebGLUniformLocation | null
   private uTime: WebGLUniformLocation | null
+  private uSpeed: WebGLUniformLocation | null
   private uSoftness: WebGLUniformLocation | null
   private uOpacity: WebGLUniformLocation | null
   private uNoise: WebGLUniformLocation | null
@@ -151,6 +153,7 @@ export class FluidGradient {
 
     this.uResolution = gl.getUniformLocation(this.program, 'u_resolution')
     this.uTime = gl.getUniformLocation(this.program, 'u_time')
+    this.uSpeed = gl.getUniformLocation(this.program, 'u_speed')
     this.uSoftness = gl.getUniformLocation(this.program, 'u_softness')
     this.uOpacity = gl.getUniformLocation(this.program, 'u_opacity')
     this.uNoise = gl.getUniformLocation(this.program, 'u_noise')
@@ -281,6 +284,7 @@ export class FluidGradient {
 
     if (this.uResolution) gl.uniform2f(this.uResolution, this.width, this.height)
     if (this.uTime) gl.uniform1f(this.uTime, time / 1000)
+    if (this.uSpeed) gl.uniform1f(this.uSpeed, this.settings.animationSpeed ?? 1)
     if (this.uSoftness) gl.uniform1f(this.uSoftness, softness)
     if (this.uOpacity) gl.uniform1f(this.uOpacity, opacity)
     if (this.uNoise) gl.uniform1f(this.uNoise, noise)

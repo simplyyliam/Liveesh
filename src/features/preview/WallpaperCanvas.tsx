@@ -41,5 +41,5 @@ export default function WallpaperCanvas({
     };
   }, []);
 
-  return <canvas ref={ref} className="h-full w-full rounded-[15px] bg-black" />;
+  return <canvas ref={ref} className="h-full w-full rounded-[6.5px] bg-black" />;
 }

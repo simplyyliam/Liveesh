@@ -1,1 +1,1 @@
-export { default as AppPage } from "./AppPage";
+export { AppLayout } from "./layout";
