@@ -10,7 +10,7 @@ export const shaderControlSections: ShaderControlSection[] = [
         label: "Scale",
         min: 120,
         max: 320,
-        step: 1,
+        step: 0.5,
         unit: "px",
       },
       {
@@ -32,7 +32,7 @@ export const shaderControlSections: ShaderControlSection[] = [
         label: "Softness",
         min: 7,
         max: 63,
-        step: 1,
+        step: 0.5,
       },
     ],
   },

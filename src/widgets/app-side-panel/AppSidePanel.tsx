@@ -39,7 +39,7 @@ export function AppSidePanel({
   return (
     <motion.aside
       aria-label="Wallpaper shader controls"
-      className="fixed top-0 left-0 z-20 flex max-h-[calc(100svh-24px)] w-[calc(100vw-24px)] overflow-hidden rounded-[22px] bg-card/80 text-card-foreground shadow-[0_20px_60px_oklch(0_0_0/0.2)] backdrop-blur-md sm:max-h-[calc(100svh-32px)] sm:w-[min(340px,calc(100vw-32px))] sm:rounded-[24px]"
+      className="fixed top-0 left-0 z-20 flex max-h-[calc(100svh-24px)] w-[calc(100vw-24px)] overflow-hidden rounded-[22px] bg-primary/50 text-card-foreground shadow-[0_20px_60px_oklch(0_0_0/0.2)] backdrop-blur-md sm:max-h-[calc(100svh-32px)] sm:w-[min(340px,calc(100vw-32px))] sm:rounded-[24px]"
       drag
       dragControls={dragControls}
       dragElastic={0.08}
@@ -52,7 +52,7 @@ export function AppSidePanel({
       <ScrollArea className="max-h-[inherit] w-full">
         <div className="flex flex-col gap-4 p-3.5">
           <div
-            className="flex min-h-10 cursor-grab touch-none select-none items-center justify-between rounded-[12px] px-2 text-muted-foreground"
+            className="flex min-h-10 cursor-grab touch-none select-none items-center justify-between rounded-[12px] px-2 text-accent"
             onPointerDown={(event) => dragControls.start(event)}
           >
             <span className="text-[13px] font-medium leading-none">
@@ -72,7 +72,7 @@ export function AppSidePanel({
 
               return (
                 <section className="flex w-full flex-col gap-2" key={id}>
-                  <div className="flex min-h-8 items-center gap-1.5 text-muted-foreground">
+                  <div className="flex min-h-8 items-center gap-1.5 text-accent">
                     <HugeiconsIcon
                       aria-hidden="true"
                       icon={icon}

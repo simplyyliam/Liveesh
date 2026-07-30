@@ -23,8 +23,11 @@ export default function WallpaperCanvas({
     settingsRef.current = settings;
     paletteRef.current = palette;
     engineRef.current?.update(settings, palette);
-    engineRef.current?.resize();
   }, [settings, palette]);
+
+  useEffect(() => {
+    engineRef.current?.resize();
+  }, [settings.renderScale]);
 
   useEffect(() => {
     if (!ref.current) return;

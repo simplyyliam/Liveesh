@@ -32,19 +32,19 @@ export function WallpaperPanelSlider({
   return (
     <label
       className={cn(
-        "group relative block h-11 w-full cursor-ew-resize select-none rounded-[10px] bg-muted/40 sm:h-8 sm:rounded-[8px]",
+        "group relative block h-11 w-full cursor-ew-resize select-none rounded-[10px] bg-muted/50 sm:h-8 sm:rounded-[8px] overflow-hidden",
         className,
       )}
     >
       <span
-        className="absolute inset-y-0 left-0 rounded-[10px] bg-primary/35 transition-[width,background-color] duration-150 ease-out group-hover:bg-primary/45 sm:rounded-[8px]"
-        style={{ width: `${progress}%` }}
+        className="absolute inset-0 origin-left rounded-[10px] bg-primary/50 transition-colors duration-150 ease-out will-change-transform group-hover:bg-primary/50 sm:rounded-[8px]"
+        style={{ transform: `scaleX(${progress / 100})` }}
       />
       <span className="pointer-events-none absolute inset-0 flex items-center justify-between px-3">
-        <span className="text-[12px] font-medium leading-none text-muted-foreground">
+        <span className="text-[12px] font-medium leading-none text-accent/50">
           {label}
         </span>
-        <span className="font-mono text-[11px] leading-none text-muted-foreground tabular-nums">
+        <span className="font-mono text-[11px] leading-none text-foreground tabular-nums">
           {clampedValue}
           {unit}
         </span>
