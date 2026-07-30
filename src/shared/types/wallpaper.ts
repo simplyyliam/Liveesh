@@ -1,4 +1,4 @@
-export type Palette = {
+export interface Palette {
   name: string
   background: string
   anchors: string[]

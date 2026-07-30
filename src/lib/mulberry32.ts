@@ -1,7 +1,7 @@
 export const mulberry32 = (seed: number) => {
   let t = seed
   return () => {
-    t += 0x6d2b79f5
+    t += 0x6D2B79F5
     let x = t
     x = Math.imul(x ^ (x >>> 15), x | 1)
     x ^= x + Math.imul(x ^ (x >>> 7), x | 61)

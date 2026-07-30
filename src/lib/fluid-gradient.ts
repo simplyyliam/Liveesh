@@ -1,6 +1,10 @@
-﻿import { type Palette, type WallpaperSettings } from '../types/fluidMesh'
+import type { Palette, WallpaperSettings } from '../shared/types/wallpaper'
 
-type RGB = { r: number; g: number; b: number }
+type RGB = {
+  r: number
+  g: number
+  b: number
+}
 
 const vertexSource = `#version 300 es
 in vec2 a_pos;

@@ -1,4 +1,4 @@
-﻿import type { Palette } from "../types/fluidMesh";
+import type { Palette } from "../shared/types/wallpaper";
 
 export const palettes: Palette[] = [
   {
