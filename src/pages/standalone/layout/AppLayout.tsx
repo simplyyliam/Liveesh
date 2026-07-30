@@ -2,7 +2,7 @@ import { Apptitlebar } from "@/widgets/app-titlebar";
 import { Outlet } from "react-router-dom";
 
 
-export default function AppLayout() {
+export default function StandaloneLayout() {
   return (
     <div className="flex flex-col h-screen bg-background">
       <Apptitlebar />
