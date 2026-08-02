@@ -59,18 +59,17 @@ export function WallpaperPanelSlider({
   return (
     <label
       className={cn(
-        "group relative block h-fit min-h-11 w-full cursor-ew-resize select-none overflow-hidden rounded-[10px] bg-muted py-1.5 outline-none",
-        "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
-        "sm:h-8 sm:rounded-xl",
+        "group relative block h-fit min-h-11 w-full cursor-ew-resize select-none overflow-hidden rounded-lg bg-muted py-1.5 outline-none",
+        "has-focus-visible:ring-2 has-focus-visible:ring-ring/50",
+        "sm:h-8",
         className,
       )}
     >
       <span
         className={cn(
-          "absolute inset-0 origin-left rounded-[10px] bg-primary/15",
+          "absolute inset-0 origin-left rounded-lg bg-primary/15",
           "transition-colors duration-150 ease-out",
           "will-change-transform group-hover:bg-primary/20",
-          "sm:rounded-[8px]",
         )}
         style={{
           transform: `scaleX(${Math.min(100, Math.max(0, progress)) / 100})`,
@@ -95,7 +94,7 @@ export function WallpaperPanelSlider({
           }}
           className={cn(
             "inline-flex h-6 min-w-8 origin-right items-center justify-center",
-            "rounded-[7px] bg-foreground/[0.08] px-1.5",
+            "rounded-[7px] bg-foreground/8 px-1.5",
             "font-mono text-[11px] font-medium leading-none",
             "text-foreground/75 tabular-nums",
           )}

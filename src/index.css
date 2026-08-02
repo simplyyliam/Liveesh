@@ -153,3 +153,7 @@ html, body, #root {
     @apply font-sans;
   }
 }
+
+button {
+    cursor: pointer
+}
