@@ -10,8 +10,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@import '@fontsource/dm-sans/300.css';
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/dm-sans/700.css';
+@import '@fontsource/dm-sans/800.css';
+@import '@fontsource/dm-sans/900.css';
+
 @theme {
   --font-DOT: 'LED Dot-Matrix', sans-serif;
+  --font-DmSans: 'DM Sans', sans-serif;
 }
 
 :root {
@@ -148,6 +157,7 @@ html, body, #root {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-DmSans);
   }
   html {
     @apply font-sans;

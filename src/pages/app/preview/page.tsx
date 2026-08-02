@@ -71,10 +71,10 @@ export default function LivePreview() {
           settings={settings}
         />
         <AppSidePanel
+          fps={fps}
           onSettingChange={updateShaderSetting}
           settings={settings}
         />
-        <div className="absolute top-5 left-5 text-black">{fps} fps</div>
         {isEmbed && statusMessage && (
           <div className="embed-status">{statusMessage}</div>
         )}

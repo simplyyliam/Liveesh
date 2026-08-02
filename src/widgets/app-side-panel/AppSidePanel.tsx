@@ -11,6 +11,7 @@ import {
   useSnapPanelPosition,
   WallpaperPanelSlider,
 } from "@/features/wallpaper-panel";
+import { FpsDisplay } from "@/widgets/fps-display";
 import {
   ArrowUp01Icon,
   FormIcon,
@@ -27,11 +28,15 @@ const sectionIcons = {
 } satisfies Record<ShaderControlSectionId, typeof FormIcon>;
 
 type AppSidePanelProps = {
+  fps: number;
   settings: ShaderSettings;
   onSettingChange: (key: ShaderControlKey, value: number) => void;
 };
 
+
+
 export function AppSidePanel({
+  fps,
   settings,
   onSettingChange,
 }: AppSidePanelProps) {
@@ -62,6 +67,7 @@ export function AppSidePanel({
               Shader
             </span>
             <div className="flex items-center gap-1 ">
+              <FpsDisplay fps={fps} />
               <Button
                 aria-controls="shader-panel-controls"
                 aria-expanded={!isCollapsed}
@@ -104,13 +110,15 @@ export function AppSidePanel({
 
                       return (
                         <section className="flex w-full flex-col gap-2" key={id}>
-                          <div className="flex min-h-8 items-center gap-1.5 text-muted-foreground">
-                            <HugeiconsIcon
-                              aria-hidden="true"
-                              icon={icon}
-                              size={14}
-                              strokeWidth={1.8}
-                            />
+                          <div className="flex min-h-8 items-center gap-2 text-muted-foreground">
+                            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-foreground">
+                              <HugeiconsIcon
+                                aria-hidden="true"
+                                icon={icon}
+                                size={12}
+                                strokeWidth={1.8}
+                              />
+                            </span>
                             <h2 className="text-[13px] font-medium leading-none text-foreground">
                               {title}
                             </h2>
