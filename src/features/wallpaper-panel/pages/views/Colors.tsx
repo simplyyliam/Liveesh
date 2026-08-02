@@ -3,10 +3,10 @@ import type { WallpaperColors } from "@/shared/types/wallpaper";
 
 export type ColorsViewProps = {
   colors: WallpaperColors;
-  onColorChange: (index: number, color: string) => void;
+  onColorsChange: (colors: WallpaperColors) => void;
 };
 
-export function Colors({ colors, onColorChange }: ColorsViewProps) {
+export function Colors({ colors, onColorsChange }: ColorsViewProps) {
   return (
     <section className="flex w-full flex-col gap-3">
       <div className="flex flex-col gap-1 px-1">
@@ -18,7 +18,7 @@ export function Colors({ colors, onColorChange }: ColorsViewProps) {
         </p>
       </div>
 
-      <ColorControls colors={colors} onColorChange={onColorChange} />
+      <ColorControls colors={colors} onColorsChange={onColorsChange} />
     </section>
   );
 }

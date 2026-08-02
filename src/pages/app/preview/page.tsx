@@ -45,16 +45,8 @@ export default function LivePreview() {
     setSettings((current) => ({ ...current, pattern }));
   }, []);
 
-  const updateColor = useCallback((index: number, color: string) => {
-    setSettings((current) => {
-      const colors = [...current.colors] as WallpaperColors
-      colors[index] = color
-
-      return {
-        ...current,
-        colors
-      }
-    })
+  const updateColors = useCallback((colors: WallpaperColors) => {
+    setSettings((current) => ({ ...current, colors }));
   }, []);
 
   useEffect(() => {
@@ -89,8 +81,8 @@ export default function LivePreview() {
         />
         <AppSidePanel
           colors={settings.colors}
-          onColorChange={updateColor}
           fps={fps}
+          onColorsChange={updateColors}
           onPatternChange={updatePattern}
           onSettingChange={updateShaderSetting}
           pattern={settings.pattern}

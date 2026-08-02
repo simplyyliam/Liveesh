@@ -18,7 +18,7 @@ export function PanelRouter({
   colors,
   headerActions,
   isCollapsed,
-  onColorChange,
+  onColorsChange,
   onHeaderPointerDown,
   onPatternChange,
   onSettingChange,
@@ -54,7 +54,7 @@ export function PanelRouter({
               settings={settings}
             />
           ) : (
-            <Colors colors={colors} onColorChange={onColorChange} />
+            <Colors colors={colors} onColorsChange={onColorsChange} />
           )}
         </motion.div>
       </AnimatePresence>

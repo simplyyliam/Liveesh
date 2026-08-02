@@ -23,7 +23,7 @@ type AppSidePanelProps = {
   fps: number;
   pattern: WallpaperPattern;
   settings: ShaderSettings;
-  onColorChange: (index: number, color: string) => void;
+  onColorsChange: (colors: WallpaperColors) => void;
   onPatternChange: (pattern: WallpaperPattern) => void;
   onSettingChange: (key: ShaderControlKey, value: number) => void;
 };
@@ -33,7 +33,7 @@ export function AppSidePanel({
   fps,
   pattern,
   settings,
-  onColorChange,
+  onColorsChange,
   onPatternChange,
   onSettingChange,
 }: AppSidePanelProps) {
@@ -86,7 +86,7 @@ export function AppSidePanel({
             </>
           }
           isCollapsed={isCollapsed}
-          onColorChange={onColorChange}
+          onColorsChange={onColorsChange}
           onHeaderPointerDown={(event) => dragControls.start(event)}
           onPatternChange={onPatternChange}
           onSettingChange={onSettingChange}
