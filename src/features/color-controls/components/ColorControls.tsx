@@ -40,7 +40,7 @@ export function ColorControls({ colors, onColorsChange }: ColorControlProps) {
       <div className="grid grid-cols-4 gap-2">
         {colors.map((color, index) => (
           <label
-            className="relative aspect-square cursor-pointer overflow-hidden rounded-lg outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+            className="relative aspect-square cursor-pointer overflow-hidden rounded-lg outline -outline-offset-1 outline-black/10"
             key={index}
             style={{ backgroundColor: color }}
           >
@@ -113,7 +113,7 @@ export function ColorControls({ colors, onColorsChange }: ColorControlProps) {
             role="tab"
             size="sm"
             type="button"
-            variant={pickerMode === "wheel" ? "secondary" : "ghost"}
+            variant="tab"
           >
             Wheel
           </Button>
@@ -125,7 +125,7 @@ export function ColorControls({ colors, onColorsChange }: ColorControlProps) {
             role="tab"
             size="sm"
             type="button"
-            variant={pickerMode === "square" ? "secondary" : "ghost"}
+            variant="tab"
           >
             Square
           </Button>

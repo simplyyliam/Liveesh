@@ -51,7 +51,7 @@ export function PanelLayout({
                 role="tab"
                 size="sm"
                 type="button"
-                variant={isActive ? "secondary" : "ghost"}
+                variant="tab"
               >
                 {view.label}
               </Button>
