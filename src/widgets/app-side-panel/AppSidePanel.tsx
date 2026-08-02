@@ -7,10 +7,12 @@ import {
   type ShaderControlSectionId,
   type ShaderSettings,
 } from "@/features/shader-editor";
+import { ShaderLibrary } from "@/features/shader-library";
 import {
   useSnapPanelPosition,
   WallpaperPanelSlider,
 } from "@/features/wallpaper-panel";
+import type { WallpaperPattern } from "@/shared/types/wallpaper";
 import { FpsDisplay } from "@/widgets/fps-display";
 import {
   ArrowUp01Icon,
@@ -29,7 +31,9 @@ const sectionIcons = {
 
 type AppSidePanelProps = {
   fps: number;
+  pattern: WallpaperPattern;
   settings: ShaderSettings;
+  onPatternChange: (pattern: WallpaperPattern) => void;
   onSettingChange: (key: ShaderControlKey, value: number) => void;
 };
 
@@ -37,7 +41,9 @@ type AppSidePanelProps = {
 
 export function AppSidePanel({
   fps,
+  pattern,
   settings,
+  onPatternChange,
   onSettingChange,
 }: AppSidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -104,6 +110,10 @@ export function AppSidePanel({
                 transition={{ type: "spring", duration: 0.3, bounce: 0 }}
               >
                 <div className="flex flex-col gap-4">
+                  <ShaderLibrary
+                    onPatternChange={onPatternChange}
+                    pattern={pattern}
+                  />
                   {shaderControlSections.map(
                     ({ id, title, controls: sectionControls }) => {
                       const icon = sectionIcons[id];

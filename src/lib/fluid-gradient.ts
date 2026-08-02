@@ -28,6 +28,7 @@ uniform float u_opacity;
 uniform float u_noise;
 uniform float u_scale;
 uniform int u_octaves;
+uniform int u_pattern;
 uniform vec3 u_colA;
 uniform vec3 u_colB;
 uniform vec3 u_colC;
@@ -73,6 +74,36 @@ vec3 gradientMix(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
 void main() {
   vec2 uv = v_uv;
   float t = u_time * 0.08 * u_speed;
+
+  if (u_pattern == 1) {
+    vec2 topoUv = v_uv - 0.5;
+    topoUv.x *= u_resolution.x / max(u_resolution.y, 1.0);
+
+    vec2 topoDrift = vec2(t * 0.16, -t * 0.11);
+    vec2 topoWarp = vec2(
+      fbm(topoUv * (u_scale * 2.8) + topoDrift),
+      fbm(topoUv * (u_scale * 2.6) - topoDrift.yx)
+    );
+
+    vec2 warpedUv = topoUv + (topoWarp - 0.5) * (0.18 + 0.2 * u_noise);
+    float elevation = fbm(warpedUv * (u_scale * 4.2) + topoDrift * 0.35);
+    elevation += fbm(warpedUv * (u_scale * 8.4) - topoDrift * 0.2) * 0.22;
+
+    float contourField = elevation * 12.0;
+    float contourDistance = abs(fract(contourField) - 0.5) * 2.0;
+    float contourWidth = max(fwidth(contourField) * 1.25, 0.012);
+    float contour = 1.0 - smoothstep(contourWidth, contourWidth * 2.3, contourDistance);
+
+    float broadElevation = smoothstep(0.12, 0.92, elevation);
+    vec3 terrain = gradientMix(broadElevation, u_colA, u_colB, u_colC, u_colD);
+    vec3 paper = mix(u_colA, u_colB, 0.28);
+    vec3 base = mix(paper, terrain, 0.42 + u_opacity * 0.34);
+    vec3 contourColor = mix(u_colC, u_colD, 0.62);
+    vec3 finalColor = mix(base, contourColor, contour * (0.48 + u_opacity * 0.42));
+
+    outColor = vec4(finalColor, 1.0);
+    return;
+  }
 
   vec2 flow = vec2(
     fbm(uv * u_scale + vec2(t * 0.35, -t * 0.22)),
@@ -135,6 +166,7 @@ export class FluidGradient {
   private uNoise: WebGLUniformLocation | null
   private uScale: WebGLUniformLocation | null
   private uOctaves: WebGLUniformLocation | null
+  private uPattern: WebGLUniformLocation | null
   private uColA: WebGLUniformLocation | null
   private uColB: WebGLUniformLocation | null
   private uColC: WebGLUniformLocation | null
@@ -159,6 +191,7 @@ export class FluidGradient {
     this.uNoise = gl.getUniformLocation(this.program, 'u_noise')
     this.uScale = gl.getUniformLocation(this.program, 'u_scale')
     this.uOctaves = gl.getUniformLocation(this.program, 'u_octaves')
+    this.uPattern = gl.getUniformLocation(this.program, 'u_pattern')
     this.uColA = gl.getUniformLocation(this.program, 'u_colA')
     this.uColB = gl.getUniformLocation(this.program, 'u_colB')
     this.uColC = gl.getUniformLocation(this.program, 'u_colC')
@@ -290,6 +323,7 @@ export class FluidGradient {
     if (this.uNoise) gl.uniform1f(this.uNoise, noise)
     if (this.uScale) gl.uniform1f(this.uScale, scale)
     if (this.uOctaves) gl.uniform1i(this.uOctaves, octaves)
+    if (this.uPattern) gl.uniform1i(this.uPattern, this.settings.pattern === 'topographic' ? 1 : 0)
 
     if (this.uColA) gl.uniform3f(this.uColA, c0.r, c0.g, c0.b)
     if (this.uColB) gl.uniform3f(this.uColB, c1.r, c1.g, c1.b)

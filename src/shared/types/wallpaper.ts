@@ -4,7 +4,10 @@ export interface Palette {
   anchors: string[]
 }
 
+export type WallpaperPattern = "fluid" | "topographic"
+
 export type WallpaperSettings = {
+  pattern: WallpaperPattern
   paletteIndex: number
   blobCount: number
   minSize: number
@@ -23,6 +26,7 @@ export type WallpaperSettings = {
 }
 
 export const defaultSettings: WallpaperSettings = {
+  pattern: "fluid",
   paletteIndex: 2,
   blobCount: 11,
   minSize: 280,

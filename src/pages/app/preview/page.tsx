@@ -4,6 +4,7 @@ import type { ShaderControlKey } from "@/features/shader-editor";
 import { useAdaptivePerformance } from "../../../features/preview";
 import {
   defaultSettings,
+  type WallpaperPattern,
   type WallpaperSettings,
 } from "../../../shared/types/wallpaper";
 import { WallpaperPreview } from "../../../widgets/wallpaper-preview";
@@ -39,6 +40,9 @@ export default function LivePreview() {
     },
     [],
   );
+  const updatePattern = useCallback((pattern: WallpaperPattern) => {
+    setSettings((current) => ({ ...current, pattern }));
+  }, []);
 
   useEffect(() => {
     if (!embedId) return;
@@ -72,7 +76,9 @@ export default function LivePreview() {
         />
         <AppSidePanel
           fps={fps}
+          onPatternChange={updatePattern}
           onSettingChange={updateShaderSetting}
+          pattern={settings.pattern}
           settings={settings}
         />
         {isEmbed && statusMessage && (
