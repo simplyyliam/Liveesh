@@ -14,10 +14,10 @@ type Oklch = {
 };
 
 const toneSteps = [
-  { lightness: 0.94, chromaScale: 0.32 },
-  { lightness: 0.81, chromaScale: 0.58 },
-  { lightness: 0.66, chromaScale: 0.82 },
-  { lightness: 0.48, chromaScale: 1 },
+  { lightnessLift: 0.48, chromaScale: 0.32 },
+  { lightnessLift: 0.32, chromaScale: 0.58 },
+  { lightnessLift: 0.16, chromaScale: 0.82 },
+  { lightnessLift: 0, chromaScale: 1 },
 ] as const;
 
 function clamp(value: number, min = 0, max = 1) {
@@ -138,7 +138,8 @@ export function generateChainedPalette(hsva: HsvaColor): WallpaperColors {
   const baseChromaRatio =
     baseMaxChroma === 0 ? 0 : clamp(base.c / baseMaxChroma);
 
-  return toneSteps.map(({ lightness, chromaScale }) => {
+  return toneSteps.map(({ lightnessLift, chromaScale }) => {
+    const lightness = base.l + (1 - base.l) * lightnessLift;
     const maxChroma = findMaxChroma(lightness, base.h);
     const chroma = maxChroma * baseChromaRatio * chromaScale;
 
