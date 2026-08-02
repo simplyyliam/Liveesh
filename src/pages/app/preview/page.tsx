@@ -4,6 +4,7 @@ import type { ShaderControlKey } from "@/features/shader-editor";
 import { useAdaptivePerformance } from "../../../features/preview";
 import {
   defaultSettings,
+  type WallpaperColors,
   type WallpaperPattern,
   type WallpaperSettings,
 } from "../../../shared/types/wallpaper";
@@ -44,6 +45,18 @@ export default function LivePreview() {
     setSettings((current) => ({ ...current, pattern }));
   }, []);
 
+  const updateColor = useCallback((index: number, color: string) => {
+    setSettings((current) => {
+      const colors = [...current.colors] as WallpaperColors
+      colors[index] = color
+
+      return {
+        ...current,
+        colors
+      }
+    })
+  }, []);
+
   useEffect(() => {
     if (!embedId) return;
     let isMounted = true;
@@ -75,6 +88,8 @@ export default function LivePreview() {
           settings={settings}
         />
         <AppSidePanel
+          colors={settings.colors}
+          onColorChange={updateColor}
           fps={fps}
           onPatternChange={updatePattern}
           onSettingChange={updateShaderSetting}

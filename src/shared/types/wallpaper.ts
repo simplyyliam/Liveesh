@@ -1,3 +1,5 @@
+export type WallpaperColors = [string, string, string, string]
+
 export interface Palette {
   name: string
   background: string
@@ -8,6 +10,7 @@ export type WallpaperPattern = "fluid" | "topographic"
 
 export type WallpaperSettings = {
   pattern: WallpaperPattern
+  colors: WallpaperColors;
   paletteIndex: number
   blobCount: number
   minSize: number
@@ -27,6 +30,7 @@ export type WallpaperSettings = {
 
 export const defaultSettings: WallpaperSettings = {
   pattern: "fluid",
+  colors: ["#e8f6ff", "#b2ddf5", "#5fb3e6", "#1a6fd1"],
   paletteIndex: 2,
   blobCount: 11,
   minSize: 280,

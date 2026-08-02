@@ -13,7 +13,11 @@ export default function WallpaperPreview({
   adaptiveScale,
   adaptiveOctaves,
 }: WallpaperPreviewProps) {
-  const palette = palettes[settings.paletteIndex];
+  const preset = palettes[settings.paletteIndex]
+  const palette = {
+    ...preset,
+    anchors: settings.colors
+  }
 
   return (
     <div className="relative h-full w-full rounded-[6.5px] bg-neutral-500">
