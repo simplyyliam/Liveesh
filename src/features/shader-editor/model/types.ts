@@ -2,6 +2,7 @@ import type { WallpaperSettings } from "@/shared/types/wallpaper";
 
 export type ShaderControlKey =
   | "grainScale"
+  | "grainOpacity"
   | "noiseAmount"
   | "fbmOctaves"
   | "softness"

@@ -14,6 +14,7 @@ export type WallpaperSettings = {
   blurStrength: number
   noiseAmount: number
   grainScale: number
+  grainOpacity: number
   animationSpeed: number
   renderScale: number
   fbmOctaves: number
@@ -31,6 +32,7 @@ export const defaultSettings: WallpaperSettings = {
   blurStrength: 52,
   noiseAmount: 0.12,
   grainScale: 140,
+  grainOpacity: 1,
   animationSpeed: 1,
   renderScale: 1,
   fbmOctaves: 4,

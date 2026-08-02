@@ -55,6 +55,13 @@ export const shaderControlSections: ShaderControlSection[] = [
     title: "Material",
     controls: [
       {
+        key: "grainOpacity",
+        label: "Grain",
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      {
         key: "opacity",
         label: "Intensity",
         min: 0.2,
