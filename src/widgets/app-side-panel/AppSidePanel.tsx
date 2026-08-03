@@ -17,6 +17,7 @@ import { FpsDisplay } from "@/widgets/fps-display";
 import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useDragControls, useReducedMotion } from "motion/react";
+import { ThemeToggle } from "@/features/toolbar";
 
 type AppSidePanelProps = {
   colors: WallpaperColors;
@@ -110,6 +111,7 @@ export function AppSidePanel({
             headerActions={
               <>
                 <FpsDisplay fps={fps} />
+                <ThemeToggle/>
                 <Button
                   aria-controls="wallpaper-panel-content"
                   aria-expanded={!isCollapsed}
@@ -120,6 +122,7 @@ export function AppSidePanel({
                   size="icon-sm"
                   type="button"
                   variant="ghost"
+                  className="bg-primary/10"
                 >
                   <motion.span
                     animate={{ rotate: isCollapsed ? 180 : 0 }}

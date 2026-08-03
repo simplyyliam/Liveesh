@@ -133,7 +133,7 @@ export function Compiler({ settings }: CompilerProps) {
                 : "Copy generated wallpaper link"
               : "Compile wallpaper"
         }
-        className="h-10 max-w-[calc(100vw-24px)] rounded-full px-4 text-[13px]"
+        className="h-10 max-w-[calc(100vw-24px)] rounded-full px-4 text-[13px] disabled:opacity-100 bg-card/95 shadow-2xl backdrop-blur-xl"
         disabled={isCompiling}
         onClick={() => {
           if (currentEmbedUrl) {
@@ -145,7 +145,7 @@ export function Compiler({ settings }: CompilerProps) {
         }}
         title={currentEmbedUrl || undefined}
         type="button"
-        variant="light"
+        variant="surface"
       >
         <AnimatePresence initial={false} mode="wait">
           <motion.span
