@@ -10,6 +10,7 @@ import {
 } from "../../../shared/types/wallpaper";
 import { WallpaperPreview } from "../../../widgets/wallpaper-preview";
 import { AppSidePanel } from "../../../widgets/app-side-panel";
+import { Toolbar } from "../../../widgets/app-toolbar";
 
 const getApiBase = () => {
   const envBase = import.meta.env.VITE_API_BASE as string | undefined;
@@ -79,15 +80,20 @@ export default function LivePreview() {
           adaptiveScale={adaptiveScale}
           settings={settings}
         />
-        <AppSidePanel
-          colors={settings.colors}
-          fps={fps}
-          onColorsChange={updateColors}
-          onPatternChange={updatePattern}
-          onSettingChange={updateShaderSetting}
-          pattern={settings.pattern}
-          settings={settings}
-        />
+        {!isEmbed && (
+          <>
+            <AppSidePanel
+              colors={settings.colors}
+              fps={fps}
+              onColorsChange={updateColors}
+              onPatternChange={updatePattern}
+              onSettingChange={updateShaderSetting}
+              pattern={settings.pattern}
+              settings={settings}
+            />
+            <Toolbar settings={settings} />
+          </>
+        )}
         {isEmbed && statusMessage && (
           <div className="embed-status">{statusMessage}</div>
         )}

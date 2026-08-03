@@ -13,6 +13,7 @@ const pages = import.meta.glob("./pages/**/page.tsx", {
 console.log("Pages", Object.keys(pages));
 
 const appRoutes: RouteObject[] = [];
+const embedRoutes: RouteObject[] = [];
 const standaloneRoutes: RouteObject[] = [];
 
 for (const [path, module] of Object.entries(pages)) {
@@ -38,6 +39,7 @@ for (const [path, module] of Object.entries(pages)) {
 
   if (isDefaultAppRoute) {
     appRoutes.push({ index: true, element: <Component /> });
+    embedRoutes.push({ path: "/embed/:embedId", element: <Component /> });
   }
 
   const route: RouteObject = { path: normalizePath, element: <Component /> };
@@ -51,6 +53,7 @@ for (const [path, module] of Object.entries(pages)) {
 }
 
 export const Router = createBrowserRouter([
+  ...embedRoutes,
   {
     path: "/",
     element: <AppLayout />,
