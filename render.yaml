@@ -1,6 +1,7 @@
 services:
   - type: web
     name: liveesh-api
+    region: frankfurt
     env: node
     plan: free
     buildCommand: npm install --include=dev && npm run build:api
