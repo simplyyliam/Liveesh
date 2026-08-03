@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -17,6 +17,8 @@ type CompilerProps = {
 };
 
 const MIN_COMPILE_FEEDBACK_MS = 700;
+const GENERATED_LINK_VISIBILITY_MS = 6_000;
+const COPY_DISMISS_DELAY_MS = 350;
 const isTauri = typeof window !== "undefined" && Boolean(window.__TAURI__);
 
 async function waitForMinimumFeedback(startedAt: number) {
@@ -42,10 +44,25 @@ export function Compiler({ settings }: CompilerProps) {
   const [embedUrl, setEmbedUrl] = useState("");
   const [isCompiling, setIsCompiling] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState("");
+  const copyDismissTimerRef = useRef<number | undefined>(undefined);
   const apiBase = useMemo(() => getApiBase(), []);
   const embedBase = useMemo(() => getEmbedBase(), []);
   const currentEmbedUrl = compiledSettings === settings ? embedUrl : "";
   const isCopied = copiedUrl === currentEmbedUrl && currentEmbedUrl.length > 0;
+
+  useEffect(() => {
+    if (!currentEmbedUrl) return;
+
+    const dismissTimer = window.setTimeout(() => {
+      setEmbedUrl("");
+    }, GENERATED_LINK_VISIBILITY_MS);
+
+    return () => window.clearTimeout(dismissTimer);
+  }, [currentEmbedUrl]);
+
+  useEffect(() => {
+    return () => window.clearTimeout(copyDismissTimerRef.current);
+  }, []);
 
   async function handleCompile() {
     setIsCompiling(true);
@@ -86,6 +103,10 @@ export function Compiler({ settings }: CompilerProps) {
     try {
       await navigator.clipboard.writeText(currentEmbedUrl);
       setCopiedUrl(currentEmbedUrl);
+      window.clearTimeout(copyDismissTimerRef.current);
+      copyDismissTimerRef.current = window.setTimeout(() => {
+        setEmbedUrl("");
+      }, COPY_DISMISS_DELAY_MS);
     } catch (error) {
       console.error("Unable to copy wallpaper link", error);
       toast.add({
@@ -98,72 +119,74 @@ export function Compiler({ settings }: CompilerProps) {
   }
 
   return (
-    <div className="flex min-w-0 flex-wrap items-end justify-center gap-2.5">
-      <div className="flex flex-col gap-1.5">
-        <Button
-          className="h-10 rounded-full px-4 text-[13px]"
-          disabled={isCompiling}
-          onClick={handleCompile}
-          type="button"
-          variant="light"
-        >
-          {isCompiling && <Spinner data-icon="inline-start" />}
-          {isCompiling ? "Compiling…" : "Compile"}
-        </Button>
-      </div>
+    <motion.div
+      layout="size"
+      transition={{ layout: { type: "spring", duration: 0.3, bounce: 0 } }}
+    >
+      <Button
+        aria-label={
+          isCompiling
+            ? "Compiling wallpaper"
+            : currentEmbedUrl
+              ? isCopied
+                ? "Wallpaper link copied"
+                : "Copy generated wallpaper link"
+              : "Compile wallpaper"
+        }
+        className="h-10 max-w-[calc(100vw-24px)] rounded-full px-4 text-[13px]"
+        disabled={isCompiling}
+        onClick={() => {
+          if (currentEmbedUrl) {
+            void handleCopy();
+            return;
+          }
 
-      <AnimatePresence initial={false} mode="popLayout">
-        {currentEmbedUrl && (
-          <motion.div
+          void handleCompile();
+        }}
+        title={currentEmbedUrl || undefined}
+        type="button"
+        variant="light"
+      >
+        <AnimatePresence initial={false} mode="wait">
+          <motion.span
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            className="flex min-w-0 flex-col gap-1.5"
+            className="flex min-w-0 items-center gap-1.5"
             exit={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
             initial={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
-            key={currentEmbedUrl}
+            key={
+              isCompiling
+                ? "compiling"
+                : currentEmbedUrl
+                  ? isCopied
+                    ? "copied"
+                    : "link"
+                  : "compile"
+            }
             transition={{ type: "spring", duration: 0.3, bounce: 0 }}
           >
-            <span className="px-1 text-[11px] font-medium leading-none text-muted-foreground">
-              Generated link
-            </span>
-            <div className="flex h-10 min-w-0 items-center rounded-full bg-muted p-1 pl-3">
-              <a
-                className="max-w-52 truncate font-mono text-[11px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:max-w-64"
-                href={currentEmbedUrl}
-                rel="noreferrer"
-                target="_blank"
-                title={currentEmbedUrl}
-              >
-                {currentEmbedUrl}
-              </a>
-              <Button
-                aria-label={isCopied ? "Wallpaper link copied" : "Copy wallpaper link"}
-                className="ml-2 rounded-full"
-                onClick={handleCopy}
-                size="icon-lg"
-                type="button"
-                variant="ghost"
-              >
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.span
-                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
-                    initial={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
-                    key={isCopied ? "copied" : "copy"}
-                    transition={{ type: "spring", duration: 0.2, bounce: 0 }}
-                  >
-                    <HugeiconsIcon
-                      aria-hidden="true"
-                      data-icon="inline-start"
-                      icon={isCopied ? CheckmarkCircle01Icon : Copy01Icon}
-                      strokeWidth={1.8}
-                    />
-                  </motion.span>
-                </AnimatePresence>
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {isCompiling ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                <span>Compiling…</span>
+              </>
+            ) : currentEmbedUrl ? (
+              <>
+                <span className="max-w-64 truncate font-mono text-[11px]">
+                  {currentEmbedUrl}
+                </span>
+                <HugeiconsIcon
+                  aria-hidden="true"
+                  data-icon="inline-end"
+                  icon={isCopied ? CheckmarkCircle01Icon : Copy01Icon}
+                  strokeWidth={1.8}
+                />
+              </>
+            ) : (
+              <span>Compile</span>
+            )}
+          </motion.span>
+        </AnimatePresence>
+      </Button>
 
       <p aria-live="polite" className="sr-only" role="status">
         {isCompiling
@@ -172,6 +195,6 @@ export function Compiler({ settings }: CompilerProps) {
             ? "Wallpaper compiled. The link is ready."
             : ""}
       </p>
-    </div>
+    </motion.div>
   );
 }
