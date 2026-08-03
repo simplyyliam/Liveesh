@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import type { ShaderControlKey } from "@/features/shader-editor";
+import { getApiBase } from "@/lib/api";
 import { useAdaptivePerformance } from "../../../features/preview";
 import {
   defaultSettings,
@@ -11,18 +12,6 @@ import {
 import { WallpaperPreview } from "../../../widgets/wallpaper-preview";
 import { AppSidePanel } from "../../../widgets/app-side-panel";
 import { Toolbar } from "../../../widgets/app-toolbar";
-
-const getApiBase = () => {
-  const envBase = import.meta.env.VITE_API_BASE as string | undefined;
-  if (envBase) return envBase.replace(/\/$/, "");
-
-  if (import.meta.env.DEV) {
-    return "";
-  }
-
-  const { protocol, hostname, port } = window.location;
-  return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
-};
 
 export default function LivePreview() {
   const [settings, setSettings] = useState<WallpaperSettings>(defaultSettings);

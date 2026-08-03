@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { getApiBase } from "../../lib/api";
 import { FluidGradient } from "../../lib/fluid-gradient";
 import { palettes } from "../../lib/palettes";
 import type { WallpaperSettings } from "../../shared/types/wallpaper";
@@ -8,15 +9,16 @@ export default function EmbedPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [settings, setSettings] = useState<WallpaperSettings>();
   const embedId = window.location.pathname.split("/embed/")[1];
+  const apiBase = getApiBase();
 
   useEffect(() => {
     if (!embedId) return;
 
     axios
-      .get(`/api/wallpapers/${embedId}`)
+      .get(`${apiBase}/api/wallpapers/${embedId}`)
       .then((response) => setSettings(response.data.settings))
       .catch(() => console.error("Failed to load wallpaper"));
-  }, [embedId]);
+  }, [apiBase, embedId]);
 
   useEffect(() => {
     if (!canvasRef.current || !settings) return;

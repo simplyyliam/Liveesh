@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { getApiBase } from "@/lib/api";
 import { toast } from "@/lib/toast-manager";
 import type { WallpaperSettings } from "@/shared/types/wallpaper";
 import {
@@ -24,22 +25,6 @@ async function waitForMinimumFeedback(startedAt: number) {
   if (remainingTime > 0) {
     await new Promise((resolve) => window.setTimeout(resolve, remainingTime));
   }
-}
-
-function getApiBase() {
-  const environmentBase = import.meta.env.VITE_API_BASE as string | undefined;
-
-  if (environmentBase) {
-    return environmentBase.replace(/\/$/, "");
-  }
-
-  if (import.meta.env.DEV) {
-    return "";
-  }
-
-  const { protocol, hostname, port } = window.location;
-
-  return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
 }
 
 function getEmbedBase() {
