@@ -12,6 +12,7 @@ const clampOctaves = (octaves: number) =>
 
 export function useAdaptivePerformance(
   settings: WallpaperSettings,
+  trackFps = true,
 ): AdaptivePerformance {
   const [fps, setFps] = useState(0);
   const [adaptive, setAdaptive] = useState(() => ({
@@ -20,6 +21,8 @@ export function useAdaptivePerformance(
   }));
 
   useEffect(() => {
+    if (!trackFps && !settings.adaptiveMode) return;
+
     let frameId = 0;
     let lastReport = performance.now();
     let frames = 0;
@@ -39,7 +42,7 @@ export function useAdaptivePerformance(
 
     frameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameId);
-  }, []);
+  }, [settings.adaptiveMode, trackFps]);
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {

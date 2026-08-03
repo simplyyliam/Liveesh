@@ -1,24 +1,23 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import type { ComponentType } from "react";
-import { AppLayout } from "./pages/app/layout";
-import { StandaloneLayout } from "./pages/standalone/layout";
+
 type PageModule = {
   default: ComponentType;
 };
 
-const pages = import.meta.glob("./pages/**/page.tsx", {
-  eager: true,
-});
-
-console.log("Pages", Object.keys(pages));
+const pages = import.meta.glob<PageModule>("./pages/**/page.tsx");
 
 const appRoutes: RouteObject[] = [];
-const embedRoutes: RouteObject[] = [];
 const standaloneRoutes: RouteObject[] = [];
 
-for (const [path, module] of Object.entries(pages)) {
-  const page = module as PageModule;
-  const Component = page.default;
+const createLazyRoute = (loadPage: () => Promise<PageModule>) => async () => {
+  const page = await loadPage();
+
+  return { Component: page.default };
+};
+
+for (const [path, loadPage] of Object.entries(pages)) {
+  const lazy = createLazyRoute(loadPage);
 
   // 1. Convert file path to route
   let routePath = path
@@ -38,11 +37,10 @@ for (const [path, module] of Object.entries(pages)) {
   const isDefaultAppRoute = !isStandalone && normalizePath === "/preview";
 
   if (isDefaultAppRoute) {
-    appRoutes.push({ index: true, element: <Component /> });
-    embedRoutes.push({ path: "/embed/:embedId", element: <Component /> });
+    appRoutes.push({ index: true, lazy });
   }
 
-  const route: RouteObject = { path: normalizePath, element: <Component /> };
+  const route: RouteObject = { path: normalizePath, lazy };
 
   // 3. Classification
   if (isStandalone) {
@@ -53,14 +51,21 @@ for (const [path, module] of Object.entries(pages)) {
 }
 
 export const Router = createBrowserRouter([
-  ...embedRoutes,
   {
     path: "/",
-    element: <AppLayout />,
+    lazy: async () => {
+      const layout = await import("./pages/app/layout/AppLayout");
+
+      return { Component: layout.default };
+    },
     children: appRoutes,
   },
   {
-    element: <StandaloneLayout />,
+    lazy: async () => {
+      const layout = await import("./pages/standalone/layout/AppLayout");
+
+      return { Component: layout.default };
+    },
     children: standaloneRoutes,
   }
 ]);

@@ -149,6 +149,7 @@ export class FluidGradient {
   private gl: WebGL2RenderingContext
   private program: WebGLProgram
   private vao: WebGLVertexArrayObject
+  private buffer: WebGLBuffer
   private width = 0
   private height = 0
   private dpr = 1
@@ -157,6 +158,9 @@ export class FluidGradient {
   private palette: Palette
   private resizeObserver?: ResizeObserver
   private isPaused = false
+  private isDestroyed = false
+  private needsDraw = true
+  private staticUniformsDirty = true
 
   private uResolution: WebGLUniformLocation | null
   private uTime: WebGLUniformLocation | null
@@ -181,7 +185,9 @@ export class FluidGradient {
     this.gl = gl
 
     this.program = this.createProgram(vertexSource, fragmentSource)
-    this.vao = this.createQuad()
+    const quad = this.createQuad()
+    this.vao = quad.vao
+    this.buffer = quad.buffer
 
     this.uResolution = gl.getUniformLocation(this.program, 'u_resolution')
     this.uTime = gl.getUniformLocation(this.program, 'u_time')
@@ -200,6 +206,9 @@ export class FluidGradient {
     this.settings = settings
     this.palette = palette
 
+    gl.disable(gl.DEPTH_TEST)
+    gl.disable(gl.BLEND)
+
     this.handleResize()
     if (window.ResizeObserver) {
       this.resizeObserver = new ResizeObserver(this.handleResize)
@@ -209,12 +218,15 @@ export class FluidGradient {
     }
 
     document.addEventListener('visibilitychange', this.handleVisibility)
-    this.frameId = requestAnimationFrame(this.animate)
+    this.scheduleFrame()
   }
 
   public update(settings: WallpaperSettings, palette: Palette) {
     this.settings = settings
     this.palette = palette
+    this.staticUniformsDirty = true
+    this.needsDraw = true
+    this.scheduleFrame()
   }
 
   private createProgram(vertex: string, fragment: string) {
@@ -275,11 +287,12 @@ export class FluidGradient {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
     gl.bindVertexArray(null)
-    return vao
+    return { vao, buffer }
   }
 
   private handleResize = () => {
     const rect = this.canvas.getBoundingClientRect()
+    const cssSizeChanged = this.width !== rect.width || this.height !== rect.height
     this.width = rect.width
     this.height = rect.height
     const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -289,9 +302,20 @@ export class FluidGradient {
     const scaledWidth = Math.max(1, Math.floor(this.width * this.dpr))
     const scaledHeight = Math.max(1, Math.floor(this.height * this.dpr))
 
-    this.canvas.width = scaledWidth
-    this.canvas.height = scaledHeight
-    this.gl.viewport(0, 0, scaledWidth, scaledHeight)
+    const bufferSizeChanged =
+      this.canvas.width !== scaledWidth || this.canvas.height !== scaledHeight
+
+    if (bufferSizeChanged) {
+      this.canvas.width = scaledWidth
+      this.canvas.height = scaledHeight
+      this.gl.viewport(0, 0, scaledWidth, scaledHeight)
+    }
+
+    if (cssSizeChanged || bufferSizeChanged) {
+      this.staticUniformsDirty = true
+      this.needsDraw = true
+      this.scheduleFrame()
+    }
   }
 
   public resize() {
@@ -305,50 +329,70 @@ export class FluidGradient {
     gl.useProgram(this.program)
     gl.bindVertexArray(this.vao)
 
-    gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-
-    const [c0, c1, c2, c3] = pickColors(this.palette)
-    const softness = Math.max(0.05, Math.min(0.45, this.settings.softness / 140))
-    const opacity = Math.max(0.2, Math.min(0.9, this.settings.opacity))
-    const noise = Math.max(0.0, Math.min(1.0, this.settings.noiseAmount / 0.4))
-    const scale = 1.0 - (Math.max(120, Math.min(320, this.settings.grainScale)) - 120) / 200 * 0.35
-    const octaves = Math.max(2, Math.min(4, Math.round(this.settings.fbmOctaves)))
-
-    if (this.uResolution) gl.uniform2f(this.uResolution, this.width, this.height)
     if (this.uTime) gl.uniform1f(this.uTime, time / 1000)
-    if (this.uSpeed) gl.uniform1f(this.uSpeed, this.settings.animationSpeed ?? 1)
-    if (this.uSoftness) gl.uniform1f(this.uSoftness, softness)
-    if (this.uOpacity) gl.uniform1f(this.uOpacity, opacity)
-    if (this.uNoise) gl.uniform1f(this.uNoise, noise)
-    if (this.uScale) gl.uniform1f(this.uScale, scale)
-    if (this.uOctaves) gl.uniform1i(this.uOctaves, octaves)
-    if (this.uPattern) gl.uniform1i(this.uPattern, this.settings.pattern === 'topographic' ? 1 : 0)
 
-    if (this.uColA) gl.uniform3f(this.uColA, c0.r, c0.g, c0.b)
-    if (this.uColB) gl.uniform3f(this.uColB, c1.r, c1.g, c1.b)
-    if (this.uColC) gl.uniform3f(this.uColC, c2.r, c2.g, c2.b)
-    if (this.uColD) gl.uniform3f(this.uColD, c3.r, c3.g, c3.b)
+    if (this.staticUniformsDirty) {
+      const [c0, c1, c2, c3] = pickColors(this.palette)
+      const softness = Math.max(0.05, Math.min(0.45, this.settings.softness / 140))
+      const opacity = Math.max(0.2, Math.min(0.9, this.settings.opacity))
+      const noise = Math.max(0.0, Math.min(1.0, this.settings.noiseAmount / 0.4))
+      const scale = 1.0 - (Math.max(120, Math.min(320, this.settings.grainScale)) - 120) / 200 * 0.35
+      const octaves = Math.max(2, Math.min(4, Math.round(this.settings.fbmOctaves)))
 
-    gl.disable(gl.DEPTH_TEST)
-    gl.disable(gl.BLEND)
+      if (this.uResolution) gl.uniform2f(this.uResolution, this.width, this.height)
+      if (this.uSpeed) gl.uniform1f(this.uSpeed, this.settings.animationSpeed ?? 1)
+      if (this.uSoftness) gl.uniform1f(this.uSoftness, softness)
+      if (this.uOpacity) gl.uniform1f(this.uOpacity, opacity)
+      if (this.uNoise) gl.uniform1f(this.uNoise, noise)
+      if (this.uScale) gl.uniform1f(this.uScale, scale)
+      if (this.uOctaves) gl.uniform1i(this.uOctaves, octaves)
+      if (this.uPattern) gl.uniform1i(this.uPattern, this.settings.pattern === 'topographic' ? 1 : 0)
+
+      if (this.uColA) gl.uniform3f(this.uColA, c0.r, c0.g, c0.b)
+      if (this.uColB) gl.uniform3f(this.uColB, c1.r, c1.g, c1.b)
+      if (this.uColC) gl.uniform3f(this.uColC, c2.r, c2.g, c2.b)
+      if (this.uColD) gl.uniform3f(this.uColD, c3.r, c3.g, c3.b)
+
+      this.staticUniformsDirty = false
+    }
 
     gl.drawArrays(gl.TRIANGLES, 0, 6)
     gl.bindVertexArray(null)
+    this.needsDraw = false
   }
 
   private animate = (time: number) => {
-    if (!this.isPaused) {
+    this.frameId = 0
+
+    if (!this.isPaused && !this.isDestroyed) {
       this.draw(time)
     }
+
+    if ((this.settings.animationSpeed ?? 1) > 0 || this.needsDraw) {
+      this.scheduleFrame()
+    }
+  }
+
+  private scheduleFrame = () => {
+    if (this.isPaused || this.isDestroyed || this.frameId) return
     this.frameId = requestAnimationFrame(this.animate)
   }
 
   private handleVisibility = () => {
     this.isPaused = document.hidden
+
+    if (this.isPaused) {
+      cancelAnimationFrame(this.frameId)
+      this.frameId = 0
+      return
+    }
+
+    this.needsDraw = true
+    this.scheduleFrame()
   }
 
   public destroy() {
+    this.isDestroyed = true
     if (this.resizeObserver) {
       this.resizeObserver.disconnect()
     } else {
@@ -356,5 +400,8 @@ export class FluidGradient {
     }
     document.removeEventListener('visibilitychange', this.handleVisibility)
     cancelAnimationFrame(this.frameId)
+    this.gl.deleteBuffer(this.buffer)
+    this.gl.deleteVertexArray(this.vao)
+    this.gl.deleteProgram(this.program)
   }
 }

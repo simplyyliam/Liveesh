@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ShaderControlKey } from "@/features/shader-editor";
-import { getApiBase } from "@/lib/api";
 import {
   loadWallpaperSettings,
   saveWallpaperSettings,
 } from "@/lib/wallpaper-settings-storage";
 import { useAdaptivePerformance } from "../../../features/preview";
 import {
-  defaultSettings,
   type WallpaperColors,
   type WallpaperPattern,
   type WallpaperSettings,
@@ -18,20 +15,13 @@ import { AppSidePanel } from "../../../widgets/app-side-panel";
 import { Toolbar } from "../../../widgets/app-toolbar";
 
 export default function LivePreview() {
-  const [embedId] = useState(() => {
-    const match = window.location.pathname.match(/\/embed\/([a-zA-Z0-9-]+)/);
-    return match?.[1] ?? null;
-  });
-  const isEmbed = Boolean(embedId);
   const [settings, setSettings] = useState<WallpaperSettings>(() =>
-    isEmbed ? defaultSettings : loadWallpaperSettings(),
+    loadWallpaperSettings(),
   );
-  const [statusMessage, setStatusMessage] = useState("");
   const settingsRef = useRef(settings);
   const { adaptiveOctaves, adaptiveScale, fps } =
     useAdaptivePerformance(settings);
 
-  const apiBase = useMemo(() => getApiBase(), []);
   const updateShaderSetting = useCallback(
     (key: ShaderControlKey, value: number) => {
       setSettings((current) => ({ ...current, [key]: value }));
@@ -49,18 +39,14 @@ export default function LivePreview() {
   useEffect(() => {
     settingsRef.current = settings;
 
-    if (isEmbed) return;
-
     const saveTimer = window.setTimeout(() => {
       saveWallpaperSettings(settings);
     }, 150);
 
     return () => window.clearTimeout(saveTimer);
-  }, [isEmbed, settings]);
+  }, [settings]);
 
   useEffect(() => {
-    if (isEmbed) return;
-
     const flushSettings = () => {
       saveWallpaperSettings(settingsRef.current);
     };
@@ -68,27 +54,7 @@ export default function LivePreview() {
     window.addEventListener("pagehide", flushSettings);
 
     return () => window.removeEventListener("pagehide", flushSettings);
-  }, [isEmbed]);
-
-  useEffect(() => {
-    if (!embedId) return;
-    let isMounted = true;
-
-    axios
-      .get(`${apiBase}/api/wallpapers/${embedId}`)
-      .then((response) => {
-        if (!isMounted) return;
-        setSettings({ ...defaultSettings, ...response.data.settings });
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setStatusMessage("Unable to load this wallpaper.");
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [apiBase, embedId]);
+  }, []);
 
   return (
     <main className="h-screen w-screen overflow-hidden">
@@ -100,23 +66,16 @@ export default function LivePreview() {
           adaptiveScale={adaptiveScale}
           settings={settings}
         />
-        {!isEmbed && (
-          <>
-            <AppSidePanel
-              colors={settings.colors}
-              fps={fps}
-              onColorsChange={updateColors}
-              onPatternChange={updatePattern}
-              onSettingChange={updateShaderSetting}
-              pattern={settings.pattern}
-              settings={settings}
-            />
-            <Toolbar settings={settings} />
-          </>
-        )}
-        {isEmbed && statusMessage && (
-          <div className="embed-status">{statusMessage}</div>
-        )}
+        <AppSidePanel
+          colors={settings.colors}
+          fps={fps}
+          onColorsChange={updateColors}
+          onPatternChange={updatePattern}
+          onSettingChange={updateShaderSetting}
+          pattern={settings.pattern}
+          settings={settings}
+        />
+        <Toolbar settings={settings} />
       </div>
     </main>
   );
