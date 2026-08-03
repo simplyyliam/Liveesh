@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: liveesh-api
+    name: Liveesh
     region: frankfurt
     env: node
     plan: free
