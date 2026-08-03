@@ -19,7 +19,7 @@ type CompilerProps = {
 const MIN_COMPILE_FEEDBACK_MS = 700;
 const GENERATED_LINK_VISIBILITY_MS = 6_000;
 const COPY_DISMISS_DELAY_MS = 350;
-const isTauri = typeof window !== "undefined" && Boolean(window.__TAURI__);
+const DEFAULT_EMBED_BASE = "https://liveesh.vercel.app";
 
 async function waitForMinimumFeedback(startedAt: number) {
   const remainingTime = MIN_COMPILE_FEEDBACK_MS - (performance.now() - startedAt);
@@ -32,11 +32,7 @@ async function waitForMinimumFeedback(startedAt: number) {
 function getEmbedBase() {
   const environmentBase = import.meta.env.VITE_EMBED_BASE as string | undefined;
 
-  if (environmentBase) {
-    return environmentBase.replace(/\/$/, "");
-  }
-
-  return isTauri ? "liveesh://wallpaper" : window.location.origin;
+  return (environmentBase || DEFAULT_EMBED_BASE).replace(/\/$/, "");
 }
 
 export function Compiler({ settings }: CompilerProps) {
@@ -78,9 +74,7 @@ export function Compiler({ settings }: CompilerProps) {
         throw new Error("The wallpaper API did not return an ID.");
       }
 
-      const link = embedBase.startsWith("liveesh://")
-        ? `${embedBase}/${id}`
-        : `${embedBase}/embed/${id}`;
+      const link = `${embedBase}/embed/${id}`;
 
       await waitForMinimumFeedback(startedAt);
       setCompiledSettings(settings);
