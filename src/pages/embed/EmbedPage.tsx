@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { useAdaptivePerformance } from "../../features/preview";
+import {
+  NoiseOverlay,
+  WallpaperCanvas,
+  useAdaptivePerformance,
+} from "../../features/preview";
 import { getApiBase } from "../../lib/api";
+import { palettes } from "../../lib/palettes";
 import {
   defaultSettings,
   type WallpaperSettings,
 } from "../../shared/types/wallpaper";
-import { WallpaperPreview } from "../../widgets/wallpaper-preview";
 
 export default function EmbedPage() {
   const [embedId] = useState(() => {
@@ -22,6 +26,26 @@ export default function EmbedPage() {
   const { adaptiveOctaves, adaptiveScale } = useAdaptivePerformance(
     settings,
     false,
+  );
+  const palette = useMemo(() => {
+    const preset = palettes[settings.paletteIndex];
+
+    return {
+      ...preset,
+      anchors: settings.colors,
+    };
+  }, [settings.colors, settings.paletteIndex]);
+  const canvasSettings = useMemo(
+    () => ({
+      ...settings,
+      renderScale: settings.adaptiveMode
+        ? adaptiveScale
+        : settings.renderScale,
+      fbmOctaves: settings.adaptiveMode
+        ? adaptiveOctaves
+        : settings.fbmOctaves,
+    }),
+    [adaptiveOctaves, adaptiveScale, settings],
   );
 
   useEffect(() => {
@@ -45,15 +69,14 @@ export default function EmbedPage() {
   }, [apiBase, embedId]);
 
   return (
-    <main className="h-screen w-screen overflow-hidden">
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2.5 p-1.5">
-        <WallpaperPreview
-          adaptiveOctaves={adaptiveOctaves}
-          adaptiveScale={adaptiveScale}
-          settings={settings}
-        />
-        {statusMessage && <div className="embed-status">{statusMessage}</div>}
-      </div>
-    </main>
+    <>
+      <WallpaperCanvas
+        fullscreen
+        palette={palette}
+        settings={canvasSettings}
+      />
+      <NoiseOverlay opacity={settings.grainOpacity} rounded={0} />
+      {statusMessage && <div className="embed-status">{statusMessage}</div>}
+    </>
   );
 }

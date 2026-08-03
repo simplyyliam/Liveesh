@@ -8,11 +8,13 @@ import type {
 type WallpaperCanvasProps = {
   settings: WallpaperSettings;
   palette: Palette;
+  fullscreen?: boolean;
 };
 
 export default function WallpaperCanvas({
   settings,
   palette,
+  fullscreen = false,
 }: WallpaperCanvasProps) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<FluidGradient | null>(null);
@@ -44,5 +46,14 @@ export default function WallpaperCanvas({
     };
   }, []);
 
-  return <canvas ref={ref} className="h-full w-full rounded-[6.5px] bg-black" />;
+  return (
+    <canvas
+      ref={ref}
+      className={
+        fullscreen
+          ? "block h-full w-full bg-black"
+          : "block h-full w-full rounded-[6.5px] bg-black"
+      }
+    />
+  );
 }
